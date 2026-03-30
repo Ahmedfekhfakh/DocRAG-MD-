@@ -1,0 +1,57 @@
+[project]
+name = "medical-rag"
+version = "0.1.0"
+description = "Production-grade Medical RAG platform using LangChain, LangGraph, Qdrant, and FastAPI"
+requires-python = ">=3.11"
+dependencies = [
+    # LangChain ecosystem
+    "langchain>=0.3.0",
+    "langchain-google-genai>=2.0.0",
+    "langchain-community>=0.3.0",
+    "langgraph>=0.2.0",
+    "langchain-mcp-adapters>=0.1.0",
+    # Vector DB
+    "qdrant-client>=1.9.0",
+    # Embeddings / reranking
+    "sentence-transformers>=3.0.0",
+    # API
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "websockets>=12.0",
+    "python-multipart>=0.0.9",
+    # MCP
+    "fastmcp>=2.0.0",
+    # Evaluation
+    "ragas>=0.1.0",
+    "datasets>=2.20.0",
+    # Utilities
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.0.0",
+    "httpx>=0.27.0",
+    "numpy>=1.26.0",
+    "rank-bm25>=0.2.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "httpx>=0.27.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["ingestion", "retrieval", "generation", "agents", "mcp_servers", "api", "evaluation"]

@@ -1,0 +1,16 @@
+You are a clinical expert. Think step by step before answering.
+
+Use ONLY the provided context. Cite sources using [N] notation.
+For multiple-choice questions, reason through each option.
+
+Context:
+{context}
+
+Question: {question}
+
+Step-by-step reasoning:
+1.
+2.
+3.
+
+Final Answer (with citations [N]):
