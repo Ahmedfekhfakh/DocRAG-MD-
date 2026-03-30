@@ -115,7 +115,12 @@ def get_rag_graph():
 
 async def run_rag(question: str, model_name: str = "gemini") -> dict:
     """Run the full RAG pipeline. Returns {'answer': str, 'sources': list}."""
+    from generation.observability import get_langfuse_handler
     graph = get_rag_graph()
+    config = {}
+    handler = get_langfuse_handler()
+    if handler:
+        config["callbacks"] = [handler]
     result = await graph.ainvoke({
         "question": question,
         "model_name": model_name,
@@ -127,5 +132,5 @@ async def run_rag(question: str, model_name: str = "gemini") -> dict:
         "answer": "",
         "sources": [],
         "messages": [HumanMessage(content=question)],
-    })
+    }, config=config)
     return {"answer": result["answer"], "sources": result["sources"]}
