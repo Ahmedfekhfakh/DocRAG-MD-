@@ -409,7 +409,8 @@ sudo chown -R $USER:$USER data/
 | 👨‍💻 | **Tahiana Andriambahoaka** | [@tahianahajanirina](https://github.com/tahianahajanirina) |
 | 👨‍💻 | **Ahmed Fekhfakh** | [@Ahmedfekhfakh](https://github.com/Ahmedfekhfakh) |
 | 👨‍💻 | **Oussama Rhouma** | [@oussama10rhouma](https://github.com/oussama10rhouma) |
-| 👨‍💻 | **AMATERASU11** | [@AMATERASU11](https://github.com/AMATERASU11) |
+| 👨‍💻 | **Mohamed Khalil Ounis** | [@AMATERASU11](https://github.com/AMATERASU11) |
+| 👨‍💻 | **Mohamed Amar** | |
 
 ---
 
