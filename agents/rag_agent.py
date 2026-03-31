@@ -3,6 +3,7 @@
 query_transform → hybrid_search → rerank → crag_gate → generate
 """
 from typing import TypedDict, Annotated
+from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode, tools_condition
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
@@ -70,7 +71,7 @@ def assemble_node(state: RAGState) -> dict:
     return {"context": context, "sources": ordered}
 
 
-async def generate_node(state: RAGState) -> dict:
+async def generate_node(state: RAGState, config: RunnableConfig) -> dict:
     """Generate final answer."""
     if not state.get("is_confident", True):
         answer = (
@@ -79,7 +80,8 @@ async def generate_node(state: RAGState) -> dict:
         )
     else:
         answer = await generate_answer(
-            state["question"], state["context"], state.get("model_name", "gemini")
+            state["question"], state["context"], state.get("model_name", "gemini"),
+            config=config,
         )
     return {"answer": answer}
 
