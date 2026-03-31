@@ -1,12 +1,12 @@
 import axios from 'axios'
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000'
+const BASE_URL = import.meta.env.VITE_API_URL || '/api'
+const WS_URL = import.meta.env.VITE_WS_URL || `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`
 
 export const api = axios.create({ baseURL: BASE_URL })
 
-export async function queryRag(question, model) {
-  const { data } = await api.post('/query', { question, model })
+export async function queryRag(question, model, mode = 'rag') {
+  const { data } = await api.post('/query', { question, model, mode })
   return data
 }
 
