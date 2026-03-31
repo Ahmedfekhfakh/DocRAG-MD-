@@ -19,6 +19,7 @@ RUN uv pip install --system -e .
 
 # Make startup script executable
 RUN chmod +x start.sh
+RUN sed -i 's/\r$//' start.sh && chmod +x start.sh
 
 EXPOSE 8000 9001 9002
 
