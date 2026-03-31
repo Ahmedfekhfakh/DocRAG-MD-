@@ -124,11 +124,11 @@ DocRAG-MD achieves **62%+ accuracy on 150 MedMCQA validation questions** (vs ~52
 
 ## 🤖 Agents
 
-| Agent | Intent Trigger | Specialty | Graph Relations |
+| Agent | Intent Trigger | Specialty | PrimeKG Relations |
 |---|---|---|---|
-| **Diagnosis** | `DIAGNOSTIC` | Symptoms, differential diagnosis, clinical decision trees | `treatment`, `causes`, `symptom`, `diagnosis` |
-| **Pharmacology** | `PHARMACOLOGIE` | Drugs, interactions, contraindications, dosing | `contraindication`, `complication`, `treatment`, `associated` |
-| **General** | `GENERAL` | Standard medical QA — no graph enrichment | — |
+| **Diagnosis** | `DIAGNOSTIC` | Symptoms, differential diagnosis, clinical decision trees | `disease_phenotype_positive`, `disease_disease` |
+| **Pharmacology** | `PHARMACOLOGIE` | Drugs, interactions, contraindications, dosing | `contraindication`, `indication`, `drug_drug`, `off-label use` |
+| **General** | `GENERAL` | Standard medical QA | All medical relations |
 | **Evaluator** | `BENCHMARK` | MedMCQA accuracy reporting | N/A |
 
 Each specialized agent runs the full pipeline: **query_transform → search → graph_search → rerank → CRAG gate → assemble → generate → self_reflect** with conditional retry (max 2).
@@ -139,7 +139,7 @@ Each specialized agent runs the full pipeline: **query_transform → search → 
 
 **Prerequisites**
 - Docker + Docker Compose
-- Gemini API key (required) — free at [aistudio.google.com](https://aistudio.google.com)
+- GCP project with Vertex AI API enabled (recommended), or Gemini API key from [aistudio.google.com](https://aistudio.google.com)
 - OpenAI API key (optional, for GPT-4o)
 
 **Quick Start**
@@ -408,6 +408,8 @@ sudo chown -R $USER:$USER data/
 |---|---|---|
 | 👨‍💻 | **Tahiana Andriambahoaka** | [@tahianahajanirina](https://github.com/tahianahajanirina) |
 | 👨‍💻 | **Ahmed Fekhfakh** | [@Ahmedfekhfakh](https://github.com/Ahmedfekhfakh) |
+| 👨‍💻 | **Oussama Rhouma** | [@oussama10rhouma](https://github.com/oussama10rhouma) |
+| 👨‍💻 | **AMATERASU11** | [@AMATERASU11](https://github.com/AMATERASU11) |
 
 ---
 
