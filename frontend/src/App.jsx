@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import ChatWindow from './components/ChatWindow'
 import ModelSelector from './components/ModelSelector'
+import ModeSelector from './components/ModeSelector'
 import SearchModeSelector from './components/SearchModeSelector'
 import DarkModeToggle from './components/DarkModeToggle'
 import AuthPage from './components/AuthPage'
@@ -47,6 +48,7 @@ export default function App() {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [model, setModel] = useState('gemini')
+  const [mode, setMode] = useState('rag')
   const [searchMode, setSearchMode] = useState('standard')
   const [loading, setLoading] = useState(false)
   const [connected, setConnected] = useState(false)
@@ -86,6 +88,8 @@ export default function App() {
               content: data.answer,
               sources: data.sources,
               model: data.model,
+              intent: data.intent,
+              mode: data.mode,
               searchMode: data.search_mode,
               isConfident: data.is_confident,
               trace: finalTrace,
@@ -123,7 +127,7 @@ export default function App() {
     setMessages((prev) => [...prev, { role: 'user', content: q }])
     setInput('')
     setLoading(true)
-    wsRef.current.send(JSON.stringify({ question: q, model, search_mode: searchMode, role }))
+    wsRef.current.send(JSON.stringify({ question: q, model, mode, search_mode: searchMode, role }))
   }
 
   const handleKey = (e) => {
@@ -163,6 +167,7 @@ export default function App() {
           <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-${roleColor}-100 text-${roleColor}-700 dark:bg-${roleColor}-900/40 dark:text-${roleColor}-300`}>
             {roleLabel}
           </span>
+          <ModeSelector value={mode} onChange={setMode} />
           <SearchModeSelector value={searchMode} onChange={setSearchMode} />
           <ModelSelector value={model} onChange={setModel} />
           <DarkModeToggle />

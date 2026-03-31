@@ -5,8 +5,10 @@ from typing import Literal
 
 class QueryRequest(BaseModel):
     question: str = Field(..., min_length=1, max_length=2000)
-    model: Literal["gemini"] = "gemini"
+    model: Literal["gemini", "gemini-pro", "biomistral", "gpt4o"] = "gemini"
+    mode: Literal["rag", "graph", "hybrid", "deep_search"] = "rag"
     search_mode: Literal["standard", "deep"] = "standard"
+    use_cot: bool = False
     role: Literal["patient", "doctor"] = "doctor"
 
 
@@ -22,7 +24,9 @@ class QueryResponse(BaseModel):
     answer: str
     sources: list[SourceDoc] = []
     model: str
-    search_mode: Literal["standard", "deep"]
+    mode: str = "rag"
+    search_mode: Literal["standard", "deep"] = "standard"
+    intent: str = ""
     is_confident: bool = True
 
 
@@ -43,7 +47,7 @@ class HealthResponse(BaseModel):
 
 class RagasEvalRequest(BaseModel):
     questions: list[str] = Field(..., min_length=1)
-    model: Literal["gemini"] = "gemini"
+    model: Literal["gemini", "gemini-pro", "biomistral"] = "gemini"
 
 
 class RagasEvalResponse(BaseModel):

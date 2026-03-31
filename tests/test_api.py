@@ -24,19 +24,20 @@ async def test_query_endpoint():
     mock_result = {
         "answer": "Diabetes is a metabolic disease [1].",
         "sources": [{"doc_id": "1", "title": "Diabetes", "content": "test", "source": "statpearls", "rerank_score": 5.0}],
-        "search_mode": "deep",
+        "search_mode": "standard",
         "is_confident": True,
+        "intent": "GENERAL",
     }
-    with patch("api.routers.query.run_rag", new_callable=AsyncMock, return_value=mock_result):
+    with patch("api.routers.query.run_orchestrator", new_callable=AsyncMock, return_value=mock_result):
         resp = client.post(
             "/query",
-            json={"question": "What is diabetes?", "model": "gemini", "search_mode": "deep"},
+            json={"question": "What is diabetes?", "model": "gemini", "mode": "rag", "search_mode": "standard"},
         )
     assert resp.status_code == 200
     data = resp.json()
     assert "answer" in data
     assert data["model"] == "gemini"
-    assert data["search_mode"] == "deep"
+    assert data["intent"] == "GENERAL"
 
 
 def test_query_validation():

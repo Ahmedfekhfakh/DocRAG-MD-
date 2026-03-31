@@ -47,7 +47,7 @@
 
 ## 📋 About
 
-DocRAG-MD is a multi-agent Retrieval-Augmented Generation platform for clinical question answering. An LLM-based orchestrator classifies user intent and routes queries to four specialized LangGraph agents — **diagnosis**, **pharmacology**, **general medical QA**, and **benchmark evaluation**. Users choose between three LLMs (Gemini 2.5 Flash, BioMistral 7B local, GPT-4o) and four search modes (RAG, Knowledge Graph, Hybrid, Deep Search PubMed). A role selector (patient / doctor) adapts the response style.
+DocRAG-MD is a multi-agent Retrieval-Augmented Generation platform for clinical question answering. An LLM-based orchestrator classifies user intent and routes queries to four specialized LangGraph agents — **diagnosis**, **pharmacology**, **general medical QA**, and **benchmark evaluation**. Users choose between four LLMs (Gemini 2.5 Flash, Gemini 2.5 Pro, BioMistral 7B local, GPT-4o), four source modes (RAG, Knowledge Graph, Hybrid, PubMed), and a Deep Search mode with multi-step retrieval. A role selector (patient / doctor) adapts the response style.
 
 The platform introduces three key technical differentiators: **GraphRAG** enrichment via PrimeKG (Harvard Dataverse) — 100k+ nodes, 4M+ edges, 9 medical relation types filtered from 29 (NetworkX MultiGraph, pickle cache), **Self-RAG** post-generation verification that checks fidelity and completeness before returning answers (max 2 retries with query reformulation), and **CRAG** confidence gating with sigmoid-normalized reranker scores (threshold > 0.60).
 
@@ -62,7 +62,8 @@ DocRAG-MD achieves **62%+ accuracy on 150 MedMCQA validation questions** (vs ~52
 | **Multi-Agent Orchestrator** | LLM-based intent classification → routes to 4 specialized LangGraph agents (diagnostic, pharmacology, general, evaluator) |
 | **GraphRAG** | PrimeKG (Harvard Dataverse) — 100k+ nodes, 4M+ edges, 9 medical relations (`indication`, `contraindication`, `off-label use`, `drug_drug`, `drug_effect`, `disease_phenotype_positive`, `disease_phenotype_negative`, `disease_disease`, `disease_protein`), NetworkX MultiGraph, pickle cache |
 | **Self-RAG** | Post-generation fidelity + completeness check via LLM — auto-reformulates on failure (max 2 retries) |
-| **Deep Search** | PubMed E-utilities API (36M+ peer-reviewed articles) — esearch → esummary → efetch abstracts |
+| **Deep Search** | LangGraph multi-step retrieval — query decomposition, source drill-down, follow-up queries, with real-time trace streaming |
+| **PubMed Search** | PubMed E-utilities API (36M+ peer-reviewed articles) — esearch → esummary → efetch abstracts |
 | **Hybrid Retrieval** | Dense (PubMedBERT 768-dim cosine) + Sparse (BM25 TF-IDF) with Reciprocal Rank Fusion (k=60) |
 | **CRAG Gate** | Sigmoid-normalized reranker scores — threshold > 0.60, prevents low-confidence generations |
 | **HyDE** | Hypothetical Document Embeddings — generates synthetic passages for expanded query matching |
@@ -77,7 +78,7 @@ DocRAG-MD achieves **62%+ accuracy on 150 MedMCQA validation questions** (vs ~52
 ### System Overview
 
 <p align="center">
-  <a href="https://excalidraw.com/#json=BU9NH1Lak05pmpxnunUQT,0UdIHI2jo8KaphhyOFzZMw">
+  <a href="https://excalidraw.com/#json=Elh-nA8JnZNAp6FxQyNwn,jTKYnwuHtESWQsO_myJ0ew">
     <img src="docs/diagrams/architecture.svg" alt="Architecture Overview" width="90%"/>
   </a>
 </p>
@@ -87,7 +88,7 @@ DocRAG-MD achieves **62%+ accuracy on 150 MedMCQA validation questions** (vs ~52
 
 ```
 ┌────────────────────── REACT FRONTEND  :3000 ───────────────────────┐
-│  Chat UI · ModelSelector (Gemini / BioMistral / GPT-4o)            │
+│  Chat UI · ModelSelector (Gemini Flash / Pro / BioMistral / GPT-4o) │
 │           ModeSelector  (RAG / Graph / Hybrid / Deep Search)       │
 │           RoleSelector  (Patient / Doctor)                         │
 └────────────────────────────┬───────────────────────────────────────┘
@@ -115,9 +116,10 @@ DocRAG-MD achieves **62%+ accuracy on 150 MedMCQA validation questions** (vs ~52
 │    → self_reflect (faithful? complete? → retry or output)           │
 ├────────────────────────────────────────────────────────────────────┤
 │  LLM ROUTER                                                        │
-│    biomistral → llama.cpp (:8080)                                   │
-│    gemini     → Gemini 2.5 Flash (API)                              │
-│    gpt4o      → GPT-4o (API)                                       │
+│    biomistral  → llama.cpp (:8080)                                  │
+│    gemini      → Gemini 2.5 Flash (Vertex AI)                       │
+│    gemini-pro  → Gemini 2.5 Pro (Vertex AI)                         │
+│    gpt4o       → GPT-4o (API)                                       │
 ├──────────────────────────────┬─────────────────────────────────────┤
 │  MCP SERVERS                 │  OBSERVABILITY                      │
 │  medical_search  :9001/mcp   │  Langfuse v3  :3001                 │
@@ -145,7 +147,7 @@ DocRAG-MD achieves **62%+ accuracy on 150 MedMCQA validation questions** (vs ~52
 |---|---|---|
 | **Language** | Python 3.11 | Backend runtime |
 | **Package Manager** | [uv](https://github.com/astral-sh/uv) + `pyproject.toml` | Dependency management |
-| **LLMs** | Gemini 2.5 Flash · BioMistral 7B (Q4_K_M) · GPT-4o | Cloud + local inference |
+| **LLMs** | Gemini 2.5 Flash · Gemini 2.5 Pro · BioMistral 7B (Q4_K_M) · GPT-4o | Cloud + local inference |
 | **LLM Framework** | LangChain LCEL + LangGraph | Chains and agent orchestration |
 | **Vector DB** | Qdrant | Dense (768-dim cosine) + sparse (BM25) named vectors |
 | **Embeddings** | PubMedBERT (`pritamdeka/PubMedBERT-mnli-snli-scinli-scitail-mednli-stsb`) | Biomedical dense embeddings |
@@ -279,8 +281,9 @@ uvicorn api.main:app --host 0.0.0.0 --port 8000
 // Request
 {
   "question": "What are the first-line treatments for hypertension?",
-  "model": "gemini",       // "gemini" | "biomistral" | "gpt4o"
+  "model": "gemini",       // "gemini" | "gemini-pro" | "biomistral" | "gpt4o"
   "mode": "rag",            // "rag" | "graph" | "hybrid" | "deep_search"
+  "search_mode": "standard", // "standard" | "deep"
   "use_cot": false,
   "role": "doctor"          // "patient" | "doctor"
 }
@@ -292,6 +295,9 @@ uvicorn api.main:app --host 0.0.0.0 --port 8000
     { "doc_id": "...", "title": "Hypertension", "content": "...", "source": "statpearls", "score": 8.3 }
   ],
   "model": "gemini",
+  "mode": "rag",
+  "search_mode": "standard",
+  "intent": "GENERAL",
   "is_confident": true
 }
 ```
@@ -300,11 +306,18 @@ uvicorn api.main:app --host 0.0.0.0 --port 8000
 
 ```json
 // Send
-{ "question": "What is Type 2 diabetes?", "model": "gemini", "mode": "rag", "role": "doctor" }
+{ "question": "What is Type 2 diabetes?", "model": "gemini", "mode": "rag", "search_mode": "standard", "role": "doctor" }
 
-// Receive
-{ "type": "start", "model": "gemini" }
-{ "type": "answer", "answer": "...", "sources": [...], "model": "gemini", "intent": "GENERAL" }
+// Receive (standard mode — via orchestrator)
+{ "type": "start", "model": "gemini", "mode": "rag", "search_mode": "standard" }
+{ "type": "answer", "answer": "...", "sources": [...], "model": "gemini", "intent": "GENERAL", "search_mode": "standard" }
+
+// Receive (deep search mode — with trace events)
+{ "type": "start", "model": "gemini", "search_mode": "deep" }
+{ "type": "trace", "step": "planning", "status": "running" }
+{ "type": "trace", "step": "retrieval", "status": "done", "evidence_count": 12 }
+{ "type": "delta", "text": "Diabetes is a metabolic..." }
+{ "type": "answer", "answer": "...", "sources": [...], "model": "gemini", "search_mode": "deep" }
 ```
 
 **`POST /ingest`**
@@ -319,7 +332,7 @@ uvicorn api.main:app --host 0.0.0.0 --port 8000
 // Request
 {
   "questions": ["What causes hypertension?", "What is metformin used for?"],
-  "model": "gemini"         // "gemini" | "biomistral"
+  "model": "gemini"         // "gemini" | "gemini-pro" | "biomistral"
 }
 
 // Response
@@ -358,7 +371,7 @@ client = MultiServerMCPClient({
 uv run pytest tests/ -v
 ```
 
-**37 / 37 passing** — covers API endpoints, agent pipelines, hybrid retrieval, reranking, ingestion, and generation.
+**40 tests** — covers API endpoints, agent pipelines (standard + deep search), hybrid retrieval, reranking, ingestion, and generation.
 
 ---
 
@@ -376,7 +389,7 @@ Self-RAG retry improves accuracy by ~2-3% through fidelity and completeness chec
 
 | Variable | Default | Required | Description |
 |---|---|---|---|
-| `GOOGLE_API_KEY` | — | **Yes** | Gemini 2.5 Flash API key |
+| `GOOGLE_API_KEY` | — | **Yes** | Gemini API key (Flash + Pro) |
 | `OPENAI_API_KEY` | — | No | GPT-4o API key |
 | `BIOMISTRAL_URL` | `http://llama-cpp:8080/v1` | No | Local BioMistral endpoint |
 | `QDRANT_HOST` | `qdrant` | No | Qdrant hostname (`localhost` for local dev) |
@@ -390,6 +403,9 @@ Self-RAG retry improves accuracy by ~2-3% through fidelity and completeness chec
 | `LANGFUSE_HOST` | `http://langfuse:3000` | No | Langfuse server URL |
 | `DATABASE_URL` | `postgresql://langfuse:langfuse@postgres:5432/medrag` | No | PostgreSQL connection (auth) |
 | `SELF_RAG_MAX_RETRIES` | `2` | No | Max self-reflection retry attempts |
+| `SPARSE_STATE_PATH` | `data/sparse_embedder_state.json` | No | BM25 sparse embedder saved state |
+| `AUTO_INGEST` | `0` | No | Auto-ingest StatPearls on startup (`1` to enable) |
+| `INGEST_LIMIT` | — | No | Max chunks to auto-ingest (empty = all) |
 
 ---
 
@@ -420,6 +436,7 @@ DocRAG-MD/
 │   ├── diagnosis_agent.py           # Specialized diagnostic agent
 │   ├── pharmacology_agent.py        # Specialized pharmacology agent
 │   ├── general_agent.py             # Standard RAG + Self-RAG
+│   ├── deep_search_agent.py          # LangGraph multi-step Deep Search
 │   ├── eval_agent.py                # MedMCQA benchmark runner
 │   └── tools.py                     # @tool wrappers (graph, pubmed, search)
 ├── retrieval/                       # Search & retrieval pipeline
@@ -429,10 +446,11 @@ DocRAG-MD/
 │   ├── context_assembler.py         # Dedup + lost-in-middle + citations
 │   ├── knowledge_graph.py           # PrimeKG loader + cache pickle
 │   ├── deep_search.py               # PubMed E-utilities integration
+│   ├── source_drilldown.py          # Deep Search source drill-down
 │   ├── self_reflect.py              # Fidelity + completeness checker
-│   └── query_transform/             # HyDE + multi-query expansion
+│   └── query_transform/             # HyDE + multi-query + decompose
 ├── generation/                      # LLM chains
-│   ├── llm_router.py                # Factory: Gemini / BioMistral / GPT-4o
+│   ├── llm_router.py                # Factory: Gemini Flash+Pro / BioMistral / GPT-4o
 │   ├── generator.py                 # LCEL prompt | llm | parser
 │   ├── observability.py             # Langfuse integration
 │   └── prompts/                     # clinical_qa.txt, cot_medical.txt
@@ -453,8 +471,8 @@ DocRAG-MD/
 │   └── datasets/medmcqa.py          # Dataset loader
 ├── frontend/src/                    # React application
 │   ├── App.jsx                      # Main state + WebSocket
-│   └── components/                  # ChatWindow, ModelSelector, ModeSelector, SourcePanel
-├── tests/                           # 37 tests (pytest)
+│   └── components/                  # ChatWindow, ModelSelector, ModeSelector, SearchModeSelector, DeepSearchTracePanel
+├── tests/                           # 40 tests (pytest)
 ├── docker-compose.yml               # 11 services
 ├── Dockerfile                       # Python 3.11 slim + uv
 └── pyproject.toml                   # Dependencies (uv)

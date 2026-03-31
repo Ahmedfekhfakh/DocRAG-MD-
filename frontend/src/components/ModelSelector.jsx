@@ -1,5 +1,8 @@
 const MODELS = [
   { value: 'gemini', label: 'Gemini 2.5 Flash' },
+  { value: 'gemini-pro', label: 'Gemini 2.5 Pro' },
+  { value: 'biomistral', label: 'BioMistral 7B (local)' },
+  { value: 'gpt4o', label: 'GPT-4o' },
 ]
 
 export default function ModelSelector({ value, onChange }) {
