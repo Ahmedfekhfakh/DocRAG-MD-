@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -10 950 480" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
-  <rect x="-10" y="-10" width="950" height="480" rx="12" fill="#ffffff"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -10 960 480" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
+  <rect x="-10" y="-10" width="960" height="480" rx="12" fill="#ffffff"/>
   <defs>
     <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="5" orient="auto-start-reverse">
       <path d="M0 0L10 5L0 10z" fill="#1e1e1e"/>
@@ -15,12 +15,9 @@
   <!-- Title -->
   <text x="480" y="18" text-anchor="middle" font-size="22" font-weight="700" fill="#1e1e1e">RAG Pipeline — Per-Agent Flow</text>
 
-  <!-- Retry label (right side, on vertical segment) -->
-  <rect x="815" y="130" width="105" height="20" rx="4" fill="white" stroke="none"/>
-  <text x="867" y="145" text-anchor="middle" font-size="12" font-weight="600" fill="#ef4444">retry (max 2)</text>
-
-  <!-- Retry loop (dashed, from Self-Reflect back to HyDE) -->
-  <path d="M808 244 L808 42 L250 42 L250 82" fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arr-r)"/>
+  <!-- Retry loop (dashed, from right of Self-Reflect back to top of HyDE) -->
+  <path d="M885 268 L920 268 L920 42 L250 42 L250 82" fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arr-r)"/>
+  <text x="580" y="36" text-anchor="middle" font-size="12" font-weight="600" fill="#ef4444">retry (max 2)</text>
 
   <!-- ===== ROW 1 ===== -->
   <!-- User Query -->
