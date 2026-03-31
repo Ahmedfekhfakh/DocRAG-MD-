@@ -21,6 +21,6 @@ def build_chain(model_name: str, use_cot: bool = False):
     return prompt | llm | StrOutputParser()
 
 
-async def generate_answer(question: str, context: str, model_name: str, use_cot: bool = False) -> str:
+async def generate_answer(question: str, context: str, model_name: str, use_cot: bool = False, config=None) -> str:
     chain = build_chain(model_name, use_cot)
-    return await chain.ainvoke({"question": question, "context": context})
+    return await chain.ainvoke({"question": question, "context": context}, config=config)

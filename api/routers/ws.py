@@ -2,6 +2,7 @@
 import json
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from agents.rag_agent import get_rag_graph
+from generation.observability import get_langfuse_handler
 from langchain_core.messages import HumanMessage
 
 router = APIRouter()
@@ -25,6 +26,10 @@ async def ws_chat(websocket: WebSocket):
 
             try:
                 graph = get_rag_graph()
+                config = {}
+                handler = get_langfuse_handler()
+                if handler:
+                    config["callbacks"] = [handler]
                 result = await graph.ainvoke({
                     "question": question,
                     "model_name": model_name,
@@ -36,7 +41,7 @@ async def ws_chat(websocket: WebSocket):
                     "answer": "",
                     "sources": [],
                     "messages": [HumanMessage(content=question)],
-                })
+                }, config=config)
                 sources = [
                     {
                         "doc_id": s.get("doc_id", ""),
