@@ -14,11 +14,13 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 COPY pyproject.toml .
 COPY . .
 
+# Install PyTorch CPU-only first (avoids pulling ~3 GB of CUDA libraries)
+RUN uv pip install --system torch --index-url https://download.pytorch.org/whl/cpu
+
 # Install dependencies
 RUN uv pip install --system -e .
 
 # Make startup script executable
-RUN chmod +x start.sh
 RUN sed -i 's/\r$//' start.sh && chmod +x start.sh
 
 EXPOSE 8000 9001 9002

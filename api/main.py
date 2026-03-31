@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from api.routers import health, query, ingest, ws, evaluate
+from api.routers import health, query, ingest, ws, evaluate, auth
 
 
 @asynccontextmanager
@@ -19,6 +19,16 @@ async def lifespan(app: FastAPI):
         print("✓ Qdrant connected")
     except Exception as e:
         print(f"⚠ Qdrant not available: {e}")
+
+    # Build/load Knowledge Graph (PrimeKG)
+    try:
+        from retrieval.knowledge_graph import load_kg
+        app.state.kg = load_kg()
+        print(f"✓ Knowledge Graph loaded: {app.state.kg.number_of_nodes()} nodes, {app.state.kg.number_of_edges()} edges")
+    except Exception as e:
+        print(f"⚠ PrimeKG not available: {e}")
+        app.state.kg = None
+
     yield
 
 
@@ -31,13 +41,14 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 app.include_router(health.router)
+app.include_router(auth.router)
 app.include_router(query.router)
 app.include_router(ingest.router)
 app.include_router(ws.router)
