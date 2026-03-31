@@ -1,0 +1,12 @@
+models/
+data/
+.git/
+.env
+.venv/
+__pycache__/
+*.pyc
+frontend/
+clickhouse/
+*.egg-info/
+.pytest_cache/
+node_modules/
