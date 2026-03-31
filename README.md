@@ -85,13 +85,13 @@ An LLM orchestrator classifies user intent and routes queries to **4 specialized
 ## 🏗️ Architecture
 
 <p align="center">
-  <a href="docs/diagrams/architecture.svg">
+  <a href="https://raw.githubusercontent.com/tahianahajanirina/DocRAG-MD/tahiana/docs/diagrams/architecture.svg">
     <img src="docs/diagrams/architecture.svg" alt="Architecture Overview" width="90%"/>
   </a>
 </p>
 
 <p align="center">
-  <a href="docs/diagrams/rag_pipeline.svg">
+  <a href="https://raw.githubusercontent.com/tahianahajanirina/DocRAG-MD/tahiana/docs/diagrams/rag_pipeline.svg">
     <img src="docs/diagrams/rag_pipeline.svg" alt="RAG Pipeline" width="90%"/>
   </a>
 </p>
@@ -132,7 +132,7 @@ An LLM orchestrator classifies user intent and routes queries to **4 specialized
 ## 🤖 Agents
 
 <p align="center">
-  <a href="docs/diagrams/agent_routing.svg">
+  <a href="https://raw.githubusercontent.com/tahianahajanirina/DocRAG-MD/tahiana/docs/diagrams/agent_routing.svg">
     <img src="docs/diagrams/agent_routing.svg" alt="Agent Routing" width="85%"/>
   </a>
 </p>
