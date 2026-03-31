@@ -8,6 +8,7 @@ class QueryRequest(BaseModel):
     model: Literal["gemini", "biomistral", "gpt4o"] = "gemini"
     mode: Literal["rag", "graph", "hybrid", "deep_search"] = "rag"
     use_cot: bool = False
+    role: Literal["patient", "doctor"] = "doctor"
 
 
 class SourceDoc(BaseModel):

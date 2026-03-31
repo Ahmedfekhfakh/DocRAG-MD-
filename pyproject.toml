@@ -36,6 +36,9 @@ dependencies = [
     "networkx>=3.6.1",
     "langchain-openai>=1.1.12",
     "requests>=2.33.0",
+    # Auth
+    "psycopg2-binary>=2.9.0",
+    "bcrypt>=4.0.0",
 ]
 
 [project.optional-dependencies]

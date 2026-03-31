@@ -5,6 +5,16 @@ const WS_URL = import.meta.env.VITE_WS_URL || `${window.location.protocol === 'h
 
 export const api = axios.create({ baseURL: BASE_URL })
 
+export async function signup(username, password, role) {
+  const { data } = await api.post('/auth/signup', { username, password, role })
+  return data
+}
+
+export async function login(username, password) {
+  const { data } = await api.post('/auth/login', { username, password })
+  return data
+}
+
 export async function queryRag(question, model, mode = 'rag') {
   const { data } = await api.post('/query', { question, model, mode })
   return data

@@ -16,6 +16,7 @@ async def ws_chat(websocket: WebSocket):
             question = payload.get("question", "")
             model_name = payload.get("model", "gemini")
             mode = payload.get("mode", "rag")
+            role = payload.get("role", "doctor")
 
             if not question:
                 await websocket.send_json({"error": "Empty question"})
