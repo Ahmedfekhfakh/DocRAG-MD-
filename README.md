@@ -16,6 +16,35 @@
 
 ---
 
+## 📸 Screenshots
+
+<div align="center">
+
+### Authentication
+<p float="left">
+  <img src="docs/screenshots/signup.png" alt="Sign Up" width="48%"/>
+  <img src="docs/screenshots/login.png" alt="Login" width="48%"/>
+</p>
+
+### Chat Interface
+<p float="left">
+  <img src="docs/screenshots/chat_patient_light.png" alt="Patient mode (light)" width="48%"/>
+  <img src="docs/screenshots/chat_doctor_sombre.png" alt="Doctor mode (dark)" width="48%"/>
+</p>
+
+### Langfuse Observability
+<p float="left">
+  <img src="docs/screenshots/langfuse_traces.jpeg" alt="Langfuse traces" width="48%"/>
+  <img src="docs/screenshots/langfuse_home.jpeg" alt="Langfuse dashboard" width="48%"/>
+</p>
+<p align="center">
+  <img src="docs/screenshots/langfuse_llama_cpp.jpeg" alt="Langfuse BioMistral trace" width="60%"/>
+</p>
+
+</div>
+
+---
+
 ## 📋 About
 
 DocRAG-MD is a multi-agent Retrieval-Augmented Generation platform for clinical question answering. An LLM-based orchestrator classifies user intent and routes queries to four specialized LangGraph agents — **diagnosis**, **pharmacology**, **general medical QA**, and **benchmark evaluation**. Users choose between three LLMs (Gemini 2.5 Flash, BioMistral 7B local, GPT-4o) and two search modes (RAG local over StatPearls, Deep Search over PubMed).
