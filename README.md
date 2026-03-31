@@ -85,13 +85,13 @@ An LLM orchestrator classifies user intent and routes queries to **4 specialized
 ## 🏗️ Architecture
 
 <p align="center">
-  <a href="https://excalidraw.com/#json=Elh-nA8JnZNAp6FxQyNwn,jTKYnwuHtESWQsO_myJ0ew">
+  <a href="docs/diagrams/architecture.svg">
     <img src="docs/diagrams/architecture.svg" alt="Architecture Overview" width="90%"/>
   </a>
 </p>
 
 <p align="center">
-  <a href="https://excalidraw.com/#json=ObhoU4gfAOFXWximmrGj2,kZc_Vj-KfSmFCPF3bYqzCw">
+  <a href="docs/diagrams/rag_pipeline.svg">
     <img src="docs/diagrams/rag_pipeline.svg" alt="RAG Pipeline" width="90%"/>
   </a>
 </p>
@@ -132,7 +132,7 @@ An LLM orchestrator classifies user intent and routes queries to **4 specialized
 ## 🤖 Agents
 
 <p align="center">
-  <a href="https://excalidraw.com/#json=7eeqn6ZwMkJQX5zjvoAlv,KxCxg3mAqFmnNWqOjhPM7A">
+  <a href="docs/diagrams/agent_routing.svg">
     <img src="docs/diagrams/agent_routing.svg" alt="Agent Routing" width="85%"/>
   </a>
 </p>
