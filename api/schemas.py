@@ -5,7 +5,7 @@ from typing import Literal
 
 class QueryRequest(BaseModel):
     question: str = Field(..., min_length=1, max_length=2000)
-    model: Literal["gemini"] = "gemini"
+    model: Literal["gemini", "biomistral"] = "gemini"
     use_cot: bool = False
 
 
