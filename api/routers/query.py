@@ -1,7 +1,7 @@
-"""POST /query — calls RAG agent."""
+"""POST /query — calls orchestrator agent."""
 from fastapi import APIRouter, HTTPException
 from api.schemas import QueryRequest, QueryResponse, SourceDoc
-from agents.rag_agent import run_rag
+from agents.orchestrator import run_orchestrator
 
 router = APIRouter()
 
@@ -9,7 +9,9 @@ router = APIRouter()
 @router.post("/query", response_model=QueryResponse)
 async def query(req: QueryRequest):
     try:
-        result = await run_rag(req.question, model_name=req.model)
+        result = await run_orchestrator(
+            req.question, model_name=req.model, mode=req.mode
+        )
         sources = [
             SourceDoc(
                 doc_id=s.get("doc_id", ""),
@@ -24,7 +26,7 @@ async def query(req: QueryRequest):
             answer=result["answer"],
             sources=sources,
             model=req.model,
-            is_confident=True,
+            is_confident=result.get("is_confident", True),
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

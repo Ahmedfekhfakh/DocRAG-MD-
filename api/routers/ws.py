@@ -1,8 +1,7 @@
-"""WebSocket /ws/chat — streaming responses."""
+"""WebSocket /ws/chat — streaming responses via orchestrator."""
 import json
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from agents.rag_agent import get_rag_graph
-from langchain_core.messages import HumanMessage
+from agents.orchestrator import run_orchestrator
 
 router = APIRouter()
 
@@ -16,6 +15,7 @@ async def ws_chat(websocket: WebSocket):
             payload = json.loads(data)
             question = payload.get("question", "")
             model_name = payload.get("model", "gemini")
+            mode = payload.get("mode", "rag")
 
             if not question:
                 await websocket.send_json({"error": "Empty question"})
@@ -24,19 +24,9 @@ async def ws_chat(websocket: WebSocket):
             await websocket.send_json({"type": "start", "model": model_name})
 
             try:
-                graph = get_rag_graph()
-                result = await graph.ainvoke({
-                    "question": question,
-                    "model_name": model_name,
-                    "queries": [],
-                    "raw_docs": [],
-                    "reranked_docs": [],
-                    "is_confident": True,
-                    "context": "",
-                    "answer": "",
-                    "sources": [],
-                    "messages": [HumanMessage(content=question)],
-                })
+                result = await run_orchestrator(
+                    question, model_name=model_name, mode=mode
+                )
                 sources = [
                     {
                         "doc_id": s.get("doc_id", ""),
@@ -51,6 +41,7 @@ async def ws_chat(websocket: WebSocket):
                     "answer": result["answer"],
                     "sources": sources,
                     "model": model_name,
+                    "intent": result.get("intent", "GENERAL"),
                 })
             except Exception as e:
                 await websocket.send_json({"type": "error", "detail": str(e)})
