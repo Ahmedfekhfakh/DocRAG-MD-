@@ -17,6 +17,7 @@ async def ws_chat(websocket: WebSocket):
             payload = json.loads(data)
             question = payload.get("question", "")
             model_name = payload.get("model", "gemini")
+            role = payload.get("role", "doctor")
 
             if not question:
                 await websocket.send_json({"error": "Empty question"})
@@ -33,6 +34,7 @@ async def ws_chat(websocket: WebSocket):
                 result = await graph.ainvoke({
                     "question": question,
                     "model_name": model_name,
+                    "role": role,
                     "queries": [],
                     "raw_docs": [],
                     "reranked_docs": [],

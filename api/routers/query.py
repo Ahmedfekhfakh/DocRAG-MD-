@@ -9,7 +9,7 @@ router = APIRouter()
 @router.post("/query", response_model=QueryResponse)
 async def query(req: QueryRequest):
     try:
-        result = await run_rag(req.question, model_name=req.model)
+        result = await run_rag(req.question, model_name=req.model, role=req.role)
         sources = [
             SourceDoc(
                 doc_id=s.get("doc_id", ""),

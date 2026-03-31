@@ -74,15 +74,17 @@ services:
     environment:
       - QDRANT_HOST=qdrant
       - QDRANT_PORT=6333
+      - DATABASE_URL=postgresql://langfuse:langfuse@postgres:5432/medrag
       - LANGFUSE_HOST=http://langfuse:3000
       - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY:-}
       - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY:-}
       - BIOMISTRAL_URL=http://llama:8080/v1
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
+      interval: 30s
+      timeout: 10s
+      retries: 40
+      start_period: 300s
 
   frontend:
     build:
@@ -102,6 +104,7 @@ services:
       POSTGRES_PASSWORD: langfuse
     volumes:
       - pg_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init-medrag.sql
     ports:
       - "5432:5432"
     healthcheck:

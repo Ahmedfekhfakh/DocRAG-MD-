@@ -22,6 +22,7 @@ import operator
 class RAGState(TypedDict):
     question: str
     model_name: str
+    role: str
     queries: list[str]
     raw_docs: list[dict]
     reranked_docs: list[dict]
@@ -81,7 +82,7 @@ async def generate_node(state: RAGState, config: RunnableConfig) -> dict:
     else:
         answer = await generate_answer(
             state["question"], state["context"], state.get("model_name", "gemini"),
-            config=config,
+            role=state.get("role", "doctor")
         )
     return {"answer": answer}
 
@@ -115,7 +116,7 @@ def get_rag_graph():
     return _rag_graph
 
 
-async def run_rag(question: str, model_name: str = "gemini") -> dict:
+async def run_rag(question: str, model_name: str = "gemini", role: str = "doctor") -> dict:
     """Run the full RAG pipeline. Returns {'answer': str, 'sources': list}."""
     from generation.observability import get_langfuse_handler
     graph = get_rag_graph()
@@ -126,6 +127,7 @@ async def run_rag(question: str, model_name: str = "gemini") -> dict:
     result = await graph.ainvoke({
         "question": question,
         "model_name": model_name,
+        "role": role,
         "queries": [],
         "raw_docs": [],
         "reranked_docs": [],

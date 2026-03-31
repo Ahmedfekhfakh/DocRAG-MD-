@@ -2,7 +2,8 @@
 set -e
 
 echo "Checking if ingestion is needed ..."
-if ! python - <<'PYEOF'
+NEEDS_INGEST=0
+python - <<'PYEOF' || NEEDS_INGEST=1
 import os, sys
 from qdrant_client import QdrantClient
 
@@ -20,7 +21,8 @@ try:
 except Exception:
     sys.exit(1)
 PYEOF
-then
+
+if [ "$NEEDS_INGEST" -eq 1 ]; then
     DATA_FILE="${DATA_PATH:-/app/data/statpearls_chunks.jsonl}"
     if [ -f "$DATA_FILE" ]; then
         echo "Running ingestion pipeline ..."

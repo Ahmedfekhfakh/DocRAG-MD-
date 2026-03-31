@@ -13,14 +13,17 @@ def _load_prompt(name: str) -> PromptTemplate:
     return PromptTemplate.from_template(text)
 
 
-def build_chain(model_name: str, use_cot: bool = False):
+def build_chain(model_name: str, use_cot: bool = False, role: str = "doctor"):
     """Return an LCEL chain: prompt | llm | parser."""
-    prompt_file = "cot_medical.txt" if use_cot else "clinical_qa.txt"
+    if role == "patient":
+        prompt_file = "patient_cot.txt" if use_cot else "patient_qa.txt"
+    else:
+        prompt_file = "cot_medical.txt" if use_cot else "clinical_qa.txt"
     prompt = _load_prompt(prompt_file)
     llm = get_llm(model_name)
     return prompt | llm | StrOutputParser()
 
 
-async def generate_answer(question: str, context: str, model_name: str, use_cot: bool = False, config=None) -> str:
-    chain = build_chain(model_name, use_cot)
+async def generate_answer(question: str, context: str, model_name: str, use_cot: bool = False, role: str = "doctor", config=None) -> str:
+    chain = build_chain(model_name, use_cot, role)
     return await chain.ainvoke({"question": question, "context": context}, config=config)

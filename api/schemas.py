@@ -7,6 +7,7 @@ class QueryRequest(BaseModel):
     question: str = Field(..., min_length=1, max_length=2000)
     model: Literal["gemini", "biomistral"] = "gemini"
     use_cot: bool = False
+    role: Literal["patient", "doctor"] = "doctor"
 
 
 class SourceDoc(BaseModel):
