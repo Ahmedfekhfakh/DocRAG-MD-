@@ -1,14 +1,13 @@
 #!/bin/bash
 set -e
 
-# Auto-ingest if Qdrant collection is empty
 echo "Checking if ingestion is needed ..."
-python - <<'PYEOF'
+if ! python - <<'PYEOF'
 import os, sys
 from qdrant_client import QdrantClient
-from qdrant_client.http.exceptions import UnexpectedResponse
 
 COLLECTION = os.getenv("COLLECTION_NAME", "medical_rag")
+
 try:
     client = QdrantClient(
         host=os.getenv("QDRANT_HOST", "qdrant"),
@@ -17,14 +16,11 @@ try:
     info = client.get_collection(COLLECTION)
     count = info.points_count or 0
     print(f"Collection '{COLLECTION}' has {count} points.")
-    if count == 0:
-        raise SystemExit(1)
-    sys.exit(0)
+    sys.exit(0 if count > 0 else 1)
 except Exception:
     sys.exit(1)
 PYEOF
-
-if [ $? -ne 0 ]; then
+then
     DATA_FILE="${DATA_PATH:-/app/data/statpearls_chunks.jsonl}"
     if [ -f "$DATA_FILE" ]; then
         echo "Running ingestion pipeline ..."

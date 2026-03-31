@@ -71,7 +71,7 @@ def _extract_chunks_from_tar(tar_path: Path, out_path: Path, chunk_size: int = 4
     count = 0
 
     with tarfile.open(tar_path, "r:gz") as tar, out_path.open("w", encoding="utf-8") as out:
-        members = [m for m in tar.getmembers() if m.name.endswith(".xml")]
+        members = [m for m in tar.getmembers() if m.name.endswith(".xml") or m.name.endswith(".nxml")]
         log.info("Processing %d XML articles ...", len(members))
         for i, member in enumerate(members):
             try:
