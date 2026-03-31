@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -30 990 470" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
-  <rect x="-10" y="-30" width="990" height="470" rx="12" fill="#ffffff"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -10 990 480" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
+  <rect x="-10" y="-10" width="990" height="480" rx="12" fill="#ffffff"/>
   <defs>
     <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="5" orient="auto-start-reverse">
       <path d="M0 0L10 5L0 10z" fill="#1e1e1e"/>
@@ -13,89 +13,90 @@
   </defs>
 
   <!-- Title -->
-  <text x="480" y="-2" text-anchor="middle" font-size="22" font-weight="700" fill="#1e1e1e">RAG Pipeline — Per-Agent Flow</text>
+  <text x="480" y="18" text-anchor="middle" font-size="22" font-weight="700" fill="#1e1e1e">RAG Pipeline — Per-Agent Flow</text>
+
+  <!-- Retry label (above row 1, below title) -->
+  <rect x="440" y="32" width="145" height="20" rx="4" fill="white" stroke="none"/>
+  <text x="512" y="47" text-anchor="middle" font-size="12" font-weight="600" fill="#ef4444">retry (max 2)</text>
+
+  <!-- Retry loop (dashed, between title and row 1) -->
+  <path d="M808 100 L808 42 L250 42 L250 80" fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arr-r)"/>
 
   <!-- ===== ROW 1 ===== -->
   <!-- User Query -->
-  <rect x="20" y="60" width="130" height="48" rx="6" fill="#a5d8ff" stroke="#4a9eed" stroke-width="1.5"/>
-  <text x="85" y="89" text-anchor="middle" font-size="14" font-weight="600" fill="#1e1e1e">User Query</text>
+  <rect x="20" y="82" width="130" height="48" rx="6" fill="#a5d8ff" stroke="#4a9eed" stroke-width="1.5"/>
+  <text x="85" y="111" text-anchor="middle" font-size="14" font-weight="600" fill="#1e1e1e">User Query</text>
 
-  <!-- Arrow -->
-  <line x1="150" y1="84" x2="192" y2="84" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="150" y1="106" x2="192" y2="106" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr)"/>
 
   <!-- HyDE -->
-  <rect x="195" y="60" width="110" height="48" rx="6" fill="#d0bfff" stroke="#8b5cf6" stroke-width="1.5"/>
-  <text x="250" y="89" text-anchor="middle" font-size="16" font-weight="600" fill="#1e1e1e">HyDE</text>
-  <text x="250" y="122" text-anchor="middle" font-size="11" fill="#757575">query expansion</text>
+  <rect x="195" y="82" width="110" height="48" rx="6" fill="#d0bfff" stroke="#8b5cf6" stroke-width="1.5"/>
+  <text x="250" y="111" text-anchor="middle" font-size="16" font-weight="600" fill="#1e1e1e">HyDE</text>
+  <text x="250" y="144" text-anchor="middle" font-size="11" fill="#757575">query expansion</text>
 
   <!-- Split arrows -->
-  <line x1="305" y1="74" x2="342" y2="58" stroke="#1e1e1e" stroke-width="1.5" marker-end="url(#arr)"/>
-  <line x1="305" y1="94" x2="342" y2="110" stroke="#1e1e1e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="305" y1="96" x2="342" y2="80" stroke="#1e1e1e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="305" y1="116" x2="342" y2="132" stroke="#1e1e1e" stroke-width="1.5" marker-end="url(#arr)"/>
 
   <!-- Hybrid Search -->
-  <rect x="345" y="36" width="170" height="38" rx="6" fill="#a5d8ff" stroke="#4a9eed" stroke-width="1.5"/>
-  <text x="430" y="60" text-anchor="middle" font-size="14" font-weight="600" fill="#1e1e1e">Hybrid Search</text>
-  <text x="430" y="86" text-anchor="middle" font-size="11" fill="#757575">Dense + Sparse + RRF</text>
+  <rect x="345" y="58" width="170" height="38" rx="6" fill="#a5d8ff" stroke="#4a9eed" stroke-width="1.5"/>
+  <text x="430" y="82" text-anchor="middle" font-size="14" font-weight="600" fill="#1e1e1e">Hybrid Search</text>
+  <text x="430" y="108" text-anchor="middle" font-size="11" fill="#757575">Dense + Sparse + RRF</text>
 
   <!-- Deep Search -->
-  <rect x="345" y="92" width="170" height="38" rx="6" fill="#ffd8a8" stroke="#f59e0b" stroke-width="1.5"/>
-  <text x="430" y="116" text-anchor="middle" font-size="14" font-weight="600" fill="#1e1e1e">Deep Search</text>
-  <text x="430" y="143" text-anchor="middle" font-size="11" fill="#757575">PubMed E-utilities</text>
+  <rect x="345" y="114" width="170" height="38" rx="6" fill="#ffd8a8" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="430" y="138" text-anchor="middle" font-size="14" font-weight="600" fill="#1e1e1e">Deep Search</text>
+  <text x="430" y="165" text-anchor="middle" font-size="11" fill="#757575">PubMed E-utilities</text>
 
   <!-- Merge arrows -->
-  <line x1="515" y1="55" x2="558" y2="78" stroke="#1e1e1e" stroke-width="1.5" marker-end="url(#arr)"/>
-  <line x1="515" y1="111" x2="558" y2="88" stroke="#1e1e1e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="515" y1="77" x2="558" y2="100" stroke="#1e1e1e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="515" y1="133" x2="558" y2="110" stroke="#1e1e1e" stroke-width="1.5" marker-end="url(#arr)"/>
 
   <!-- Graph Search -->
-  <rect x="560" y="60" width="155" height="48" rx="6" fill="#c3fae8" stroke="#06b6d4" stroke-width="1.5"/>
-  <text x="638" y="89" text-anchor="middle" font-size="14" font-weight="600" fill="#1e1e1e">Graph Search</text>
-  <text x="638" y="122" text-anchor="middle" font-size="11" fill="#757575">PrimeKG</text>
+  <rect x="560" y="82" width="155" height="48" rx="6" fill="#c3fae8" stroke="#06b6d4" stroke-width="1.5"/>
+  <text x="638" y="111" text-anchor="middle" font-size="14" font-weight="600" fill="#1e1e1e">Graph Search</text>
+  <text x="638" y="144" text-anchor="middle" font-size="11" fill="#757575">PrimeKG</text>
 
-  <!-- Connector: Row 1 → Row 2 (stepped arrow) -->
-  <path d="M638 108 L638 160 L105 160 L105 218" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr)"/>
+  <!-- Connector: Row 1 → Row 2 -->
+  <path d="M638 130 L638 182 L105 182 L105 240" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr)"/>
 
   <!-- ===== ROW 2 ===== -->
   <!-- Rerank -->
-  <rect x="35" y="222" width="130" height="48" rx="6" fill="#d0bfff" stroke="#8b5cf6" stroke-width="1.5"/>
-  <text x="100" y="251" text-anchor="middle" font-size="16" font-weight="600" fill="#1e1e1e">Rerank</text>
-  <text x="100" y="284" text-anchor="middle" font-size="11" fill="#757575">MiniLM cross-encoder</text>
+  <rect x="35" y="244" width="130" height="48" rx="6" fill="#d0bfff" stroke="#8b5cf6" stroke-width="1.5"/>
+  <text x="100" y="273" text-anchor="middle" font-size="16" font-weight="600" fill="#1e1e1e">Rerank</text>
+  <text x="100" y="306" text-anchor="middle" font-size="11" fill="#757575">MiniLM cross-encoder</text>
 
-  <line x1="165" y1="246" x2="198" y2="246" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="165" y1="268" x2="198" y2="268" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr)"/>
 
   <!-- CRAG Gate -->
-  <rect x="200" y="222" width="140" height="48" rx="6" fill="#ffc9c9" stroke="#ef4444" stroke-width="1.5"/>
-  <text x="270" y="251" text-anchor="middle" font-size="16" font-weight="600" fill="#1e1e1e">CRAG Gate</text>
-  <text x="270" y="284" text-anchor="middle" font-size="11" fill="#757575">sigmoid > 0.60</text>
+  <rect x="200" y="244" width="140" height="48" rx="6" fill="#ffc9c9" stroke="#ef4444" stroke-width="1.5"/>
+  <text x="270" y="273" text-anchor="middle" font-size="16" font-weight="600" fill="#1e1e1e">CRAG Gate</text>
+  <text x="270" y="306" text-anchor="middle" font-size="11" fill="#757575">sigmoid > 0.60</text>
 
-  <line x1="340" y1="246" x2="373" y2="246" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="340" y1="268" x2="373" y2="268" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr)"/>
 
   <!-- Assembly -->
-  <rect x="375" y="222" width="150" height="48" rx="6" fill="#c3fae8" stroke="#06b6d4" stroke-width="1.5"/>
-  <text x="450" y="251" text-anchor="middle" font-size="16" font-weight="600" fill="#1e1e1e">Assembly</text>
-  <text x="450" y="284" text-anchor="middle" font-size="11" fill="#757575">dedup + lost-in-middle</text>
+  <rect x="375" y="244" width="150" height="48" rx="6" fill="#c3fae8" stroke="#06b6d4" stroke-width="1.5"/>
+  <text x="450" y="273" text-anchor="middle" font-size="16" font-weight="600" fill="#1e1e1e">Assembly</text>
+  <text x="450" y="306" text-anchor="middle" font-size="11" fill="#757575">dedup + lost-in-middle</text>
 
-  <line x1="525" y1="246" x2="558" y2="246" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="525" y1="268" x2="558" y2="268" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr)"/>
 
   <!-- Generate -->
-  <rect x="560" y="222" width="130" height="48" rx="6" fill="#fff3bf" stroke="#f59e0b" stroke-width="1.5"/>
-  <text x="625" y="251" text-anchor="middle" font-size="16" font-weight="600" fill="#1e1e1e">Generate</text>
-  <text x="625" y="284" text-anchor="middle" font-size="11" fill="#757575">selected LLM</text>
+  <rect x="560" y="244" width="130" height="48" rx="6" fill="#fff3bf" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="625" y="273" text-anchor="middle" font-size="16" font-weight="600" fill="#1e1e1e">Generate</text>
+  <text x="625" y="306" text-anchor="middle" font-size="11" fill="#757575">selected LLM</text>
 
-  <line x1="690" y1="246" x2="728" y2="246" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="690" y1="268" x2="728" y2="268" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr)"/>
 
   <!-- Self-Reflect -->
-  <rect x="730" y="222" width="155" height="48" rx="6" fill="#eebefa" stroke="#8b5cf6" stroke-width="1.5"/>
-  <text x="808" y="251" text-anchor="middle" font-size="16" font-weight="600" fill="#1e1e1e">Self-Reflect</text>
-  <text x="808" y="284" text-anchor="middle" font-size="11" fill="#757575">faithful? complete?</text>
+  <rect x="730" y="244" width="155" height="48" rx="6" fill="#eebefa" stroke="#8b5cf6" stroke-width="1.5"/>
+  <text x="808" y="273" text-anchor="middle" font-size="16" font-weight="600" fill="#1e1e1e">Self-Reflect</text>
+  <text x="808" y="306" text-anchor="middle" font-size="11" fill="#757575">faithful? complete?</text>
 
   <!-- Pass → Output -->
-  <line x1="808" y1="270" x2="808" y2="318" stroke="#22c55e" stroke-width="2" marker-end="url(#arr-g)"/>
-  <text x="828" y="300" font-size="12" font-weight="600" fill="#22c55e">pass</text>
-  <rect x="755" y="322" width="115" height="42" rx="6" fill="#b2f2bb" stroke="#22c55e" stroke-width="1.5"/>
-  <text x="813" y="348" text-anchor="middle" font-size="16" font-weight="700" fill="#15803d">Output</text>
-
-  <!-- Retry loop (dashed, goes above diagram) -->
-  <path d="M808 222 L808 -15 L250 -15 L250 60" fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arr-r)"/>
-  <rect x="440" y="-28" width="145" height="22" rx="4" fill="white" stroke="none"/>
-  <text x="512" y="-12" text-anchor="middle" font-size="12" font-weight="600" fill="#ef4444">retry (max 2)</text>
+  <line x1="808" y1="292" x2="808" y2="340" stroke="#22c55e" stroke-width="2" marker-end="url(#arr-g)"/>
+  <text x="828" y="322" font-size="12" font-weight="600" fill="#22c55e">pass</text>
+  <rect x="755" y="344" width="115" height="42" rx="6" fill="#b2f2bb" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="813" y="370" text-anchor="middle" font-size="16" font-weight="700" fill="#15803d">Output</text>
 </svg>
