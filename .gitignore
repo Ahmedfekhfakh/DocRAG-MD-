@@ -5,6 +5,7 @@ __pycache__/
 *.pyo
 data/
 models/
+.claude/
 *.gguf
 node_modules/
 dist/
