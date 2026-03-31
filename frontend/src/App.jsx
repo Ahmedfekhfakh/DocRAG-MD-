@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
 import ChatWindow from './components/ChatWindow'
 import ModelSelector from './components/ModelSelector'
+import ModeSelector from './components/ModeSelector'
 import { createChatSocket } from './api/client'
 
 export default function App() {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [model, setModel] = useState('gemini')
+  const [mode, setMode] = useState('rag')
   const [loading, setLoading] = useState(false)
   const [connected, setConnected] = useState(false)
   const wsRef = useRef(null)
@@ -17,7 +19,7 @@ export default function App() {
         if (data.type === 'answer') {
           setMessages((prev) => [
             ...prev,
-            { role: 'assistant', content: data.answer, sources: data.sources, model: data.model },
+            { role: 'assistant', content: data.answer, sources: data.sources, model: data.model, intent: data.intent },
           ])
           setLoading(false)
         } else if (data.type === 'error') {
@@ -42,7 +44,7 @@ export default function App() {
     setMessages((prev) => [...prev, { role: 'user', content: q }])
     setInput('')
     setLoading(true)
-    wsRef.current.send(JSON.stringify({ question: q, model }))
+    wsRef.current.send(JSON.stringify({ question: q, model, mode }))
   }
 
   const handleKey = (e) => {
@@ -61,6 +63,7 @@ export default function App() {
           <p className="text-xs text-gray-500">StatPearls · 301k clinical chunks</p>
         </div>
         <div className="flex items-center gap-4">
+          <ModeSelector value={mode} onChange={setMode} />
           <ModelSelector value={model} onChange={setModel} />
           <div className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-red-400'}`} title={connected ? 'Connected' : 'Disconnected'} />
         </div>
