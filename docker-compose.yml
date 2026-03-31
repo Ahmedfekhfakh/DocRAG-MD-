@@ -11,25 +11,6 @@ services:
       timeout: 5s
       retries: 5
 
-  llama-cpp:
-    image: ghcr.io/ggml-org/llama.cpp:server
-    platform: linux/amd64
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./models:/models
-      - hf_cache:/root/.cache/huggingface
-    command: >
-      --model /models/BioMistral-7B.Q4_K_M.gguf
-      --host 0.0.0.0 --port 8080
-      --ctx-size 4096 --threads 4 --cont-batching
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    restart: unless-stopped
-
   api:
     build: .
     ports:
@@ -39,9 +20,6 @@ services:
     depends_on:
       qdrant:
         condition: service_healthy
-      llama-cpp:
-        condition: service_started
-        required: false
     env_file: .env
     volumes:
       - ./data:/app/data
@@ -56,7 +34,8 @@ services:
       - LANGFUSE_HOST=http://langfuse:3000
       - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY:-}
       - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY:-}
-      - BIOMISTRAL_URL=http://llama-cpp:8080/v1
+      - AUTO_INGEST=${AUTO_INGEST:-0}
+      - INGEST_LIMIT=${INGEST_LIMIT:-}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s

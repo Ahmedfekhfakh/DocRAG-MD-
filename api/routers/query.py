@@ -1,7 +1,7 @@
-"""POST /query — calls orchestrator agent."""
+"""POST /query — calls the RAG entrypoint with standard or Deep Search."""
 from fastapi import APIRouter, HTTPException
 from api.schemas import QueryRequest, QueryResponse, SourceDoc
-from agents.orchestrator import run_orchestrator
+from agents.rag_agent import run_rag
 
 router = APIRouter()
 
@@ -9,8 +9,11 @@ router = APIRouter()
 @router.post("/query", response_model=QueryResponse)
 async def query(req: QueryRequest):
     try:
-        result = await run_orchestrator(
-            req.question, model_name=req.model, mode=req.mode
+        result = await run_rag(
+            req.question,
+            model_name=req.model,
+            role=req.role,
+            search_mode=req.search_mode,
         )
         sources = [
             SourceDoc(
@@ -26,6 +29,7 @@ async def query(req: QueryRequest):
             answer=result["answer"],
             sources=sources,
             model=req.model,
+            search_mode=result.get("search_mode", req.search_mode),
             is_confident=result.get("is_confident", True),
         )
     except Exception as e:

@@ -1,10 +1,12 @@
 """Tests for ingestion pipeline."""
 import pytest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock
+
 from ingestion.loaders.statpearls_loader import load_chunks
 from ingestion.embedders.dense_embedder import embed_texts, embed_query
 from ingestion.embedders.sparse_embedder import SparseEmbedder
+import ingestion.pipeline as pipeline
 
 
 def test_sparse_embedder_fit_encode():
@@ -28,6 +30,16 @@ def test_sparse_embedder_empty_query():
     result = se.encode("xyzzy12345_notaword")
     assert result["indices"] == []
     assert result["values"] == []
+
+
+def test_sparse_embedder_state_roundtrip(tmp_path):
+    se = SparseEmbedder().fit(["diabetes insulin resistance", "hypertension blood pressure"])
+    state_path = tmp_path / "sparse_state.json"
+    se.dump(state_path)
+
+    restored = SparseEmbedder.load(state_path)
+
+    assert restored.encode("diabetes insulin") == se.encode("diabetes insulin")
 
 
 def test_dense_embedder_shape():
@@ -63,3 +75,23 @@ def test_load_chunks_limit(tmp_path):
     jsonl.write_text("".join(lines))
     chunks = list(load_chunks(jsonl, limit=3))
     assert len(chunks) == 3
+
+
+def test_pipeline_saves_sparse_state(tmp_path, monkeypatch):
+    jsonl = tmp_path / "test.jsonl"
+    jsonl.write_text(
+        '{"id": "1", "title": "Diabetes", "content": "Diabetes text", "contents": "Diabetes text"}\n'
+    )
+    state_path = tmp_path / "sparse_embedder_state.json"
+    mock_client = MagicMock()
+
+    monkeypatch.setattr(pipeline, "DATA_PATH", jsonl)
+    monkeypatch.setattr(pipeline, "SPARSE_STATE_PATH", state_path)
+    monkeypatch.setattr(pipeline, "get_client", lambda: mock_client)
+    monkeypatch.setattr(pipeline, "ensure_collection", lambda client: None)
+    monkeypatch.setattr(pipeline, "embed_texts", lambda texts: [[0.0] * 768 for _ in texts])
+
+    total = pipeline.run(limit=1)
+
+    assert total == 1
+    assert state_path.exists()
