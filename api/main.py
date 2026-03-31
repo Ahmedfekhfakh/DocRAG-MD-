@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from api.routers import health, query, ingest, ws
+from api.routers import health, query, ingest, ws, evaluate
 
 
 @asynccontextmanager
@@ -51,3 +51,4 @@ app.include_router(health.router)
 app.include_router(query.router)
 app.include_router(ingest.router)
 app.include_router(ws.router)
+app.include_router(evaluate.router)

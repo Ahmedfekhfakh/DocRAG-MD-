@@ -38,3 +38,15 @@ class HealthResponse(BaseModel):
     status: str
     qdrant: str
     version: str = "0.1.0"
+
+
+class RagasEvalRequest(BaseModel):
+    questions: list[str] = Field(..., min_length=1)
+    model: Literal["gemini", "biomistral"] = "gemini"
+
+
+class RagasEvalResponse(BaseModel):
+    scores: dict[str, float]
+    n_samples: int
+    model: str
+    langfuse_trace_id: str | None = None
