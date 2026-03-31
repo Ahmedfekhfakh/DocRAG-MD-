@@ -3,6 +3,7 @@ import os
 import bcrypt
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from typing import Literal
@@ -11,13 +12,31 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://langfuse:langfuse@localhost:5432/medrag")
 
+# Base URL without database name — used to create the DB itself
+_BASE_URL = DATABASE_URL.rsplit("/", 1)[0] + "/postgres"
+_DB_NAME = DATABASE_URL.rsplit("/", 1)[1].split("?")[0]
+
+
+def _ensure_database():
+    """Create the medrag database if it doesn't exist."""
+    conn = psycopg2.connect(_BASE_URL)
+    conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT 1 FROM pg_database WHERE datname = %s", (_DB_NAME,))
+            if not cur.fetchone():
+                cur.execute(f'CREATE DATABASE "{_DB_NAME}"')
+    finally:
+        conn.close()
+
 
 def _get_conn():
     return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
 
 
 def _ensure_table():
-    """Create users table if it doesn't exist (idempotent)."""
+    """Create the database and users table if they don't exist."""
+    _ensure_database()
     conn = _get_conn()
     try:
         with conn.cursor() as cur:
