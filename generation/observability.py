@@ -1,19 +1,16 @@
 """Langfuse observability — optional. No-ops if keys are not set."""
 import os
+import uuid
 
-_handler = None
+
+def langfuse_enabled() -> bool:
+    return bool(os.getenv("LANGFUSE_PUBLIC_KEY") and os.getenv("LANGFUSE_SECRET_KEY"))
 
 
-def get_langfuse_handler():
-    """Return a Langfuse CallbackHandler if keys are configured, else None.
-
-    Langfuse v3 reads LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY, LANGFUSE_HOST
-    from environment variables automatically.
-    """
-    global _handler
-    if not os.getenv("LANGFUSE_PUBLIC_KEY") or not os.getenv("LANGFUSE_SECRET_KEY"):
+def create_langfuse_handler():
+    """Create a NEW CallbackHandler per request with a unique trace_id."""
+    if not langfuse_enabled():
         return None
-    if _handler is None:
-        from langfuse.langchain import CallbackHandler
-        _handler = CallbackHandler()
-    return _handler
+    from langfuse.langchain import CallbackHandler
+    trace_id = uuid.uuid4().hex  # 32 lowercase hex chars
+    return CallbackHandler(trace_context={"trace_id": trace_id})
