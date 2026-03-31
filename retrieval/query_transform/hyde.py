@@ -8,7 +8,9 @@ _HYDE_PROMPT = PromptTemplate.from_template(
 )
 
 
-async def generate_hypothetical_doc(question: str, model_name: str = "gemini") -> str:
+async def generate_hypothetical_doc(question: str, model_name: str = "gemini", config=None) -> str:
     llm = get_llm(model_name)
     chain = _HYDE_PROMPT | llm | StrOutputParser()
-    return await chain.ainvoke({"question": question})
+    invoke_config = dict(config) if config else {}
+    invoke_config["run_name"] = "2_hyde_query_transform"
+    return await chain.ainvoke({"question": question}, config=invoke_config)

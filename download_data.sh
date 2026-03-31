@@ -13,12 +13,15 @@ cd "$SCRIPT_DIR"
 
 CHUNK_LIMIT="${1:-0}"
 
-export SKIP_GGUF=1
 export SKIP_DATA=0
 export DATA_CHUNK_LIMIT="$CHUNK_LIMIT"
 
+GGUF_MODEL="BioMistral-7B.Q4_K_M.gguf"
+GGUF_URL="https://huggingface.co/MaziyarPanahi/BioMistral-7B-GGUF/resolve/main/${GGUF_MODEL}"
+MODELS_DIR="${SCRIPT_DIR}/models"
+
 echo "================================================"
-echo "  StatPearls Data Downloader"
+echo "  DocRAG-MD Setup"
 echo "  Chunk limit: ${CHUNK_LIMIT:-all}"
 echo "  Output: data/statpearls_chunks.jsonl"
 echo "================================================"
@@ -37,6 +40,23 @@ command -v python &>/dev/null || PYTHON=python3
 
 echo ""
 echo "================================================"
-echo "  Data ready: data/statpearls_chunks.jsonl"
-echo "  Next step: docker compose up"
+echo "  Downloading BioMistral 7B GGUF (local LLM)"
+echo "================================================"
+
+if [ -f "${MODELS_DIR}/${GGUF_MODEL}" ]; then
+    echo "BioMistral GGUF already present: ${MODELS_DIR}/${GGUF_MODEL}"
+else
+    mkdir -p "${MODELS_DIR}"
+    echo "Downloading ${GGUF_MODEL} (~4.1 GB) ..."
+    curl -L --progress-bar -o "${MODELS_DIR}/${GGUF_MODEL}" "${GGUF_URL}"
+    echo "Saved: ${MODELS_DIR}/${GGUF_MODEL}"
+fi
+
+echo ""
+echo "================================================"
+echo "  Setup complete!"
+echo "  Data:   data/statpearls_chunks.jsonl"
+echo "  Graph:  data/kg.csv (PrimeKG)"
+echo "  Model:  models/${GGUF_MODEL}"
+echo "  Next:   docker compose up --build"
 echo "================================================"

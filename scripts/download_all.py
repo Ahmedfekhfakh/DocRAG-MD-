@@ -71,7 +71,7 @@ def _extract_chunks_from_tar(tar_path: Path, out_path: Path, chunk_size: int = 4
     count = 0
 
     with tarfile.open(tar_path, "r:gz") as tar, out_path.open("w", encoding="utf-8") as out:
-        members = [m for m in tar.getmembers() if m.name.endswith(".xml")]
+        members = [m for m in tar.getmembers() if m.name.endswith((".xml", ".nxml"))]
         log.info("Processing %d XML articles ...", len(members))
         for i, member in enumerate(members):
             try:
@@ -144,9 +144,23 @@ def download_statpearls() -> None:
         log.info("StatPearls ready: %d chunks → %s", count, CHUNKS_FILE)
 
 
+PRIMEKG_URL = "https://dataverse.harvard.edu/api/access/datafile/6180620"
+PRIMEKG_FILE = DATA_DIR / "kg.csv"
+
+
+def download_primekg() -> None:
+    if PRIMEKG_FILE.exists() and PRIMEKG_FILE.stat().st_size > 1000:
+        log.info("PrimeKG already present: %s (%.0f MB)",
+                 PRIMEKG_FILE, PRIMEKG_FILE.stat().st_size / 1024 / 1024)
+        return
+    log.info("=== Downloading PrimeKG (~500 MB) ===")
+    download_file(PRIMEKG_URL, PRIMEKG_FILE, "PrimeKG kg.csv")
+
+
 def main():
     DATA_DIR.mkdir(exist_ok=True)
     download_statpearls()
+    download_primekg()
     log.info("=== Download complete ===")
 
 
