@@ -367,7 +367,7 @@ DocRAG-MD/
 | 👨‍💻 | **Ahmed Fekhfakh** | [@Ahmedfekhfakh](https://github.com/Ahmedfekhfakh) |
 | 👨‍💻 | **Oussama Rhouma** | [@oussama10rhouma](https://github.com/oussama10rhouma) |
 | 👨‍💻 | **Mohamed Khalil Ounis** | [@AMATERASU11](https://github.com/AMATERASU11) |
-| 👨‍💻 | **Mohamed Amar** | |
+| 👨‍💻 | **Mohamed Amar** | [@mohamedbebay1-sys](https://github.com/mohamedbebay1-sys) |
 
 <p align="center">
   <strong>DocRAG-MD</strong> — Multi-Agent Medical RAG Platform<br>
