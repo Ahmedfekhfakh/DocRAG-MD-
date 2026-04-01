@@ -19,15 +19,28 @@
 ## 📸 Screenshots
 
 <div align="center">
+
+### Chat Interface
 <p float="left">
   <img src="docs/screenshots/chat_patient_light.png" alt="Patient mode (light)" width="48%"/>
   <img src="docs/screenshots/chat_doctor_sombre.png" alt="Doctor mode (dark)" width="48%"/>
 </p>
+
+### Authentication
 <p float="left">
-  <img src="docs/screenshots/signup.png" alt="Sign Up" width="32%"/>
-  <img src="docs/screenshots/login.png" alt="Login" width="32%"/>
-  <img src="docs/screenshots/langfuse_traces.jpeg" alt="Langfuse traces" width="32%"/>
+  <img src="docs/screenshots/signup.png" alt="Sign Up" width="48%"/>
+  <img src="docs/screenshots/login.png" alt="Login" width="48%"/>
 </p>
+
+### Langfuse Observability
+<p float="left">
+  <img src="docs/screenshots/langfuse_traces.jpeg" alt="Langfuse traces" width="48%"/>
+  <img src="docs/screenshots/langfuse_home.jpeg" alt="Langfuse dashboard" width="48%"/>
+</p>
+<p align="center">
+  <img src="docs/screenshots/langfuse_llama_cpp.jpeg" alt="Langfuse BioMistral trace" width="60%"/>
+</p>
+
 </div>
 
 ---
