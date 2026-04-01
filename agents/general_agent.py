@@ -10,13 +10,14 @@ from langchain_core.runnables import RunnableConfig
 from generation.llm_router import get_llm
 from retrieval.hybrid_retriever import hybrid_search
 from retrieval.deep_search import search_pubmed, fetch_abstracts
-from retrieval.reranker import rerank
+from retrieval.reranker import rerank_async
 from retrieval.crag import crag_gate
 from retrieval.context_assembler import assemble_context
 from retrieval.query_transform.hyde import generate_hypothetical_doc
 from retrieval.self_reflect import check_response
 from retrieval.knowledge_graph import query_graph, extract_medical_terms
 from generation.generator import generate_answer
+import asyncio
 import operator
 
 
@@ -39,43 +40,53 @@ class GeneralState(TypedDict):
     messages: Annotated[list, operator.add]
 
 
-async def query_transform_node(state: GeneralState, config: RunnableConfig) -> dict:
+async def query_transform_and_search_node(state: GeneralState, config: RunnableConfig) -> dict:
+    """HyDE + search in parallel: search original query while HyDE generates."""
     question = state["question"]
     reason = state.get("retry_reason", "")
     if reason:
         question = f"{question} (Contexte: {reason})"
-    model_name = state.get("model_name", "gemini")
-    try:
-        hypo = await generate_hypothetical_doc(question, model_name, config=config)
-        queries = [question, hypo]
-    except Exception:
-        queries = [question]
-    return {"queries": queries}
-
-
-async def search_node(state: GeneralState) -> dict:
     mode = state.get("mode", "rag")
+    model_name = state.get("model_name", "gemini")
+
     if mode == "graph":
-        return {"raw_docs": []}
-    all_docs: list[dict] = []
-    seen_ids: set[str] = set()
+        return {"queries": [question], "raw_docs": []}
+
     if mode == "deep_search":
-        results = search_pubmed(state["question"], max_results=10)
+        results = search_pubmed(question, max_results=10)
         pmids = [r["pmid"] for r in results]
         abstracts = fetch_abstracts(pmids) if pmids else {}
         for r in results:
             r["content"] = abstracts.get(r["pmid"], "")
             r["doc_id"] = f"pubmed:{r['pmid']}"
-            all_docs.append(r)
-    else:
-        for q in state.get("queries", [state["question"]]):
-            docs = hybrid_search(q, top_k=10)
-            for d in docs:
-                did = d.get("doc_id", d.get("content", "")[:50])
-                if did not in seen_ids:
-                    seen_ids.add(did)
-                    all_docs.append(d)
-    return {"raw_docs": all_docs}
+        return {"queries": [question], "raw_docs": results}
+
+    # Parallel: HyDE generation + search on original query
+    async def _hyde():
+        try:
+            return await generate_hypothetical_doc(question, model_name, config=config)
+        except Exception:
+            return None
+
+    async def _search_original():
+        return await asyncio.to_thread(hybrid_search, question, 10)
+
+    hypo, base_docs = await asyncio.gather(_hyde(), _search_original())
+
+    seen_ids = {d.get("doc_id", d.get("content", "")[:50]) for d in base_docs}
+    all_docs = list(base_docs)
+
+    # If HyDE succeeded, search with it too and merge
+    if hypo:
+        hyde_docs = await asyncio.to_thread(hybrid_search, hypo, 10)
+        for d in hyde_docs:
+            did = d.get("doc_id", d.get("content", "")[:50])
+            if did not in seen_ids:
+                seen_ids.add(did)
+                all_docs.append(d)
+
+    queries = [question, hypo] if hypo else [question]
+    return {"queries": queries, "raw_docs": all_docs}
 
 
 async def graph_search_node(state: GeneralState, config: RunnableConfig) -> dict:
@@ -113,11 +124,11 @@ async def graph_search_node(state: GeneralState, config: RunnableConfig) -> dict
     return {"graph_context": "\n".join(lines)}
 
 
-def rerank_node(state: GeneralState) -> dict:
+async def rerank_node(state: GeneralState) -> dict:
     mode = state.get("mode", "rag")
     if mode == "graph":
         return {"reranked_docs": [], "is_confident": True}
-    docs = rerank(state["question"], state["raw_docs"], top_k=5)
+    docs = await rerank_async(state["question"], state["raw_docs"], top_k=5)
     filtered, is_confident = crag_gate(docs)
     return {"reranked_docs": filtered, "is_confident": is_confident}
 
@@ -173,24 +184,22 @@ def should_retry(state: GeneralState) -> str:
 
 def build_general_graph() -> StateGraph:
     graph = StateGraph(GeneralState)
-    graph.add_node("query_transform", query_transform_node)
-    graph.add_node("search", search_node)
+    graph.add_node("query_and_search", query_transform_and_search_node)
     graph.add_node("graph_search", graph_search_node)
     graph.add_node("rerank", rerank_node)
     graph.add_node("assemble", assemble_node)
     graph.add_node("generate", generate_node)
     graph.add_node("self_reflect", self_reflect_node)
 
-    graph.set_entry_point("query_transform")
-    graph.add_edge("query_transform", "search")
-    graph.add_edge("search", "graph_search")
+    graph.set_entry_point("query_and_search")
+    graph.add_edge("query_and_search", "graph_search")
     graph.add_edge("graph_search", "rerank")
     graph.add_edge("rerank", "assemble")
     graph.add_edge("assemble", "generate")
     graph.add_edge("generate", "self_reflect")
     graph.add_conditional_edges("self_reflect", should_retry, {
         "done": END,
-        "retry": "query_transform",
+        "retry": "query_and_search",
     })
 
     return graph.compile()

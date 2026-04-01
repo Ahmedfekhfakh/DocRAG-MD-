@@ -2,9 +2,46 @@ import { useState, useEffect, useRef } from 'react'
 import ChatWindow from './components/ChatWindow'
 import ModelSelector from './components/ModelSelector'
 import ModeSelector from './components/ModeSelector'
+import SearchModeSelector from './components/SearchModeSelector'
 import DarkModeToggle from './components/DarkModeToggle'
 import AuthPage from './components/AuthPage'
 import { createChatSocket } from './api/client'
+
+function createInitialTrace(searchMode) {
+  return {
+    searchMode,
+    steps: {
+      planning: 'pending',
+      retrieval: 'pending',
+      drilldown: 'pending',
+      assessment: 'pending',
+      generation: 'pending',
+    },
+    queries: [],
+    followUpQueries: [],
+    evidenceCount: 0,
+    topSources: [],
+    confidence: null,
+  }
+}
+
+function mergeTrace(prevTrace, event) {
+  const trace = prevTrace || createInitialTrace(event.search_mode || 'deep')
+  const next = {
+    ...trace,
+    steps: {
+      ...trace.steps,
+      [event.step]: event.status,
+    },
+  }
+
+  if (event.queries) next.queries = event.queries
+  if (event.follow_up_queries) next.followUpQueries = event.follow_up_queries
+  if (event.evidence_count !== undefined) next.evidenceCount = event.evidence_count
+  if (event.top_sources) next.topSources = event.top_sources
+  if (event.is_confident !== undefined) next.confidence = event.is_confident
+  return next
+}
 
 export default function App() {
   const [user, setUser] = useState(null)
@@ -12,27 +49,67 @@ export default function App() {
   const [input, setInput] = useState('')
   const [model, setModel] = useState('gemini')
   const [mode, setMode] = useState('rag')
+  const [searchMode, setSearchMode] = useState('standard')
   const [loading, setLoading] = useState(false)
   const [connected, setConnected] = useState(false)
+  const [activeTrace, setActiveTrace] = useState(null)
+  const [streamingAnswer, setStreamingAnswer] = useState('')
   const wsRef = useRef(null)
+  const activeTraceRef = useRef(null)
 
   const role = user?.role
+
+  const updateTrace = (updater) => {
+    setActiveTrace((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater
+      activeTraceRef.current = next
+      return next
+    })
+  }
 
   useEffect(() => {
     if (!user) return
     const ws = createChatSocket(
       (data) => {
-        if (data.type === 'answer') {
+        if (data.type === 'start') {
+          setLoading(true)
+          setStreamingAnswer('')
+          updateTrace(createInitialTrace(data.search_mode || searchMode))
+        } else if (data.type === 'trace') {
+          updateTrace((prev) => mergeTrace(prev, data))
+        } else if (data.type === 'delta') {
+          setStreamingAnswer((prev) => `${prev}${data.text || ''}`)
+        } else if (data.type === 'answer') {
+          const finalTrace = activeTraceRef.current
           setMessages((prev) => [
             ...prev,
-            { role: 'assistant', content: data.answer, sources: data.sources, model: data.model, intent: data.intent },
+            {
+              role: 'assistant',
+              content: data.answer,
+              sources: data.sources,
+              model: data.model,
+              intent: data.intent,
+              mode: data.mode,
+              searchMode: data.search_mode,
+              isConfident: data.is_confident,
+              trace: finalTrace,
+            },
           ])
+          updateTrace(null)
+          setStreamingAnswer('')
           setLoading(false)
         } else if (data.type === 'error') {
           setMessages((prev) => [
             ...prev,
-            { role: 'assistant', content: `Error: ${data.detail}`, sources: [] },
+            {
+              role: 'assistant',
+              content: `Error: ${data.detail}`,
+              sources: [],
+              trace: activeTraceRef.current,
+            },
           ])
+          updateTrace(null)
+          setStreamingAnswer('')
           setLoading(false)
         }
       },
@@ -50,7 +127,7 @@ export default function App() {
     setMessages((prev) => [...prev, { role: 'user', content: q }])
     setInput('')
     setLoading(true)
-    wsRef.current.send(JSON.stringify({ question: q, model, mode, role }))
+    wsRef.current.send(JSON.stringify({ question: q, model, mode, search_mode: searchMode, role }))
   }
 
   const handleKey = (e) => {
@@ -65,6 +142,9 @@ export default function App() {
     setUser(null)
     setMessages([])
     setConnected(false)
+    setLoading(false)
+    setStreamingAnswer('')
+    updateTrace(null)
   }
 
   if (!user) {
@@ -88,6 +168,7 @@ export default function App() {
             {roleLabel}
           </span>
           <ModeSelector value={mode} onChange={setMode} />
+          <SearchModeSelector value={searchMode} onChange={setSearchMode} />
           <ModelSelector value={model} onChange={setModel} />
           <DarkModeToggle />
           <div className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-red-400'}`} title={connected ? 'Connected' : 'Disconnected'} />
@@ -97,7 +178,12 @@ export default function App() {
         </div>
       </header>
 
-      <ChatWindow messages={messages} loading={loading} />
+      <ChatWindow
+        messages={messages}
+        loading={loading}
+        activeTrace={activeTrace}
+        streamingAnswer={streamingAnswer}
+      />
 
       <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 py-3">
         <div className="flex gap-2 max-w-4xl mx-auto">

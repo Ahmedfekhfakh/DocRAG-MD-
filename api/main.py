@@ -29,6 +29,21 @@ async def lifespan(app: FastAPI):
         print(f"⚠ PrimeKG not available: {e}")
         app.state.kg = None
 
+    # Preload ML models to avoid cold-start on first request
+    try:
+        from retrieval.reranker import preload_model
+        preload_model()
+        print("✓ Reranker model preloaded")
+    except Exception as e:
+        print(f"⚠ Reranker preload failed: {e}")
+
+    try:
+        from ingestion.embedders.dense_embedder import embed_query
+        embed_query("warmup")
+        print("✓ Dense embedder preloaded")
+    except Exception as e:
+        print(f"⚠ Dense embedder preload failed: {e}")
+
     yield
 
 
