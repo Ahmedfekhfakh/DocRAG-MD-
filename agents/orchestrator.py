@@ -12,6 +12,17 @@ from langchain_core.runnables import RunnableConfig
 from generation.llm_router import get_llm
 from typing import TypedDict, Annotated
 import operator
+import logging
+
+log = logging.getLogger(__name__)
+
+
+def _safe_flush(handler):
+    """Non-blocking Langfuse flush."""
+    try:
+        handler.client.flush()
+    except Exception:
+        log.debug("Langfuse flush failed (non-blocking)", exc_info=True)
 
 CLASSIFY_PROMPT = ChatPromptTemplate.from_messages([
     ("system", """Classifie la question médicale suivante dans UNE des catégories :
@@ -174,11 +185,12 @@ async def run_orchestrator(
         "messages": [HumanMessage(content=question)],
     }, config=config)
 
+    # Fire-and-forget flush — don't block response delivery
     if handler:
-        try:
-            handler.client.flush()
-        except Exception:
-            pass
+        import asyncio
+        asyncio.get_event_loop().call_soon(
+            lambda: _safe_flush(handler)
+        )
 
     return {
         "answer": result["answer"],

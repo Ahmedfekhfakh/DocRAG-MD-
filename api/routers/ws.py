@@ -62,6 +62,7 @@ async def ws_chat(websocket: WebSocket):
                     })
                 else:
                     # Standard: route through orchestrator for intent classification
+                    await websocket.send_json({"type": "status", "step": "Classifying intent..."})
                     result = await run_orchestrator(
                         question,
                         model_name=model_name,
