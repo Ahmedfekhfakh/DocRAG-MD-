@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -10 1100 720" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
+  <rect x="0" y="-10" width="1100" height="720" rx="12" fill="#ffffff"/>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#1e1e1e"/>
+    </marker>
+    <marker id="arr-o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="5" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#f59e0b"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="400" y="18" text-anchor="middle" font-size="22" font-weight="700" fill="#1e1e1e">DocRAG-MD — System Architecture</text>
+
+  <!-- ===== FRONTEND ZONE ===== -->
+  <rect x="70" y="42" width="660" height="118" rx="10" fill="#dbe4ff" fill-opacity="0.4" stroke="#4a9eed" stroke-width="1"/>
+  <text x="82" y="58" font-size="11" fill="#2563eb" font-weight="700" letter-spacing="1">FRONTEND</text>
+  <rect x="255" y="60" width="280" height="38" rx="6" fill="#a5d8ff" stroke="#4a9eed" stroke-width="1.5"/>
+  <text x="395" y="84" text-anchor="middle" font-size="16" font-weight="600" fill="#1e1e1e">React Chat UI :3000</text>
+  <rect x="155" y="108" width="130" height="30" rx="5" fill="#a5d8ff" stroke="#4a9eed" stroke-width="1"/>
+  <text x="220" y="128" text-anchor="middle" font-size="12" fill="#1e1e1e">ModelSelector</text>
+  <rect x="300" y="108" width="130" height="30" rx="5" fill="#a5d8ff" stroke="#4a9eed" stroke-width="1"/>
+  <text x="365" y="128" text-anchor="middle" font-size="12" fill="#1e1e1e">ModeSelector</text>
+  <rect x="445" y="108" width="125" height="30" rx="5" fill="#a5d8ff" stroke="#4a9eed" stroke-width="1"/>
+  <text x="508" y="128" text-anchor="middle" font-size="12" fill="#1e1e1e">RoleSelector</text>
+
+  <!-- Arrow: Frontend → API -->
+  <line x1="400" y1="160" x2="400" y2="192" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="420" y="180" font-size="11" fill="#555">WS + REST</text>
+
+  <!-- ===== API ZONE ===== -->
+  <rect x="70" y="198" width="660" height="80" rx="10" fill="#e5dbff" fill-opacity="0.4" stroke="#8b5cf6" stroke-width="1"/>
+  <text x="82" y="214" font-size="11" fill="#6d28d9" font-weight="700" letter-spacing="1">BACKEND</text>
+  <rect x="260" y="208" width="250" height="38" rx="6" fill="#d0bfff" stroke="#8b5cf6" stroke-width="1.5"/>
+  <text x="385" y="232" text-anchor="middle" font-size="16" font-weight="600" fill="#1e1e1e">FastAPI :8000</text>
+  <text x="400" y="266" text-anchor="middle" font-size="11" fill="#6d28d9">/auth    /query    /ws/chat    /evaluate    /ingest    /health</text>
+
+  <!-- Arrow: API → Orchestrator -->
+  <line x1="400" y1="278" x2="400" y2="308" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- ===== ORCHESTRATOR ZONE ===== -->
+  <rect x="70" y="310" width="660" height="180" rx="10" fill="#e5dbff" fill-opacity="0.22" stroke="#8b5cf6" stroke-width="1"/>
+  <text x="82" y="326" font-size="11" fill="#6d28d9" font-weight="700" letter-spacing="1">ORCHESTRATOR (LangGraph)</text>
+  <rect x="285" y="335" width="200" height="34" rx="6" fill="#d0bfff" stroke="#8b5cf6" stroke-width="1.5"/>
+  <text x="385" y="357" text-anchor="middle" font-size="15" font-weight="600" fill="#1e1e1e">classify_intent</text>
+
+  <!-- Arrow: classify → route diamond -->
+  <line x1="385" y1="369" x2="385" y2="390" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- Route diamond -->
+  <polygon points="385,392 415,412 385,432 355,412" fill="#fff3bf" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="385" y="416" text-anchor="middle" font-size="11" fill="#1e1e1e">route</text>
+
+  <!-- Arrows: diamond → 4 agents -->
+  <line x1="362" y1="425" x2="150" y2="454" stroke="#ef4444" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="375" y1="432" x2="318" y2="454" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="395" y1="432" x2="475" y2="454" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="408" y1="425" x2="620" y2="454" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Agent boxes -->
+  <rect x="75" y="456" width="150" height="28" rx="5" fill="#ffc9c9" stroke="#ef4444" stroke-width="1.5"/>
+  <text x="150" y="475" text-anchor="middle" font-size="13" font-weight="600" fill="#1e1e1e">Diagnosis</text>
+  <rect x="240" y="456" width="155" height="28" rx="5" fill="#ffd8a8" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="318" y="475" text-anchor="middle" font-size="13" font-weight="600" fill="#1e1e1e">Pharmacology</text>
+  <rect x="415" y="456" width="120" height="28" rx="5" fill="#b2f2bb" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="475" y="475" text-anchor="middle" font-size="13" font-weight="600" fill="#1e1e1e">General</text>
+  <rect x="555" y="456" width="130" height="28" rx="5" fill="#fff3bf" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="620" y="475" text-anchor="middle" font-size="13" font-weight="600" fill="#1e1e1e">Evaluator</text>
+
+  <!-- Arrow: agents → pipeline -->
+  <line x1="400" y1="488" x2="400" y2="508" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- ===== PIPELINE ===== -->
+  <rect x="70" y="512" width="660" height="32" rx="6" fill="#c3fae8" stroke="#06b6d4" stroke-width="1.5"/>
+  <text x="400" y="533" text-anchor="middle" font-size="13" font-weight="600" fill="#1e1e1e">HyDE > Search > GraphRAG > Rerank > CRAG > Generate > Self-RAG</text>
+
+  <!-- Arrows: pipeline → LLM + Data -->
+  <line x1="260" y1="544" x2="260" y2="570" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="540" y1="544" x2="540" y2="570" stroke="#1e1e1e" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- ===== LLM ROUTER ===== -->
+  <rect x="70" y="572" width="310" height="120" rx="10" fill="#fff3bf" fill-opacity="0.35" stroke="#f59e0b" stroke-width="1"/>
+  <text x="82" y="588" font-size="11" fill="#92400e" font-weight="700" letter-spacing="1">LLM ROUTER</text>
+  <rect x="85" y="596" width="140" height="24" rx="5" fill="#fff3bf" stroke="#f59e0b" stroke-width="1"/>
+  <text x="155" y="612" text-anchor="middle" font-size="11" fill="#1e1e1e">Gemini 2.5 Flash</text>
+  <rect x="235" y="596" width="130" height="24" rx="5" fill="#fff3bf" stroke="#f59e0b" stroke-width="1"/>
+  <text x="300" y="612" text-anchor="middle" font-size="11" fill="#1e1e1e">Gemini 2.5 Pro</text>
+  <rect x="85" y="630" width="140" height="24" rx="5" fill="#fff3bf" stroke="#f59e0b" stroke-width="1"/>
+  <text x="155" y="646" text-anchor="middle" font-size="11" fill="#1e1e1e">BioMistral :8080</text>
+  <rect x="235" y="630" width="130" height="24" rx="5" fill="#fff3bf" stroke="#f59e0b" stroke-width="1"/>
+  <text x="300" y="646" text-anchor="middle" font-size="11" fill="#1e1e1e">GPT-4o</text>
+
+  <!-- ===== DATA SOURCES ===== -->
+  <rect x="400" y="572" width="330" height="120" rx="10" fill="#d3f9d8" fill-opacity="0.35" stroke="#22c55e" stroke-width="1"/>
+  <text x="412" y="588" font-size="11" fill="#15803d" font-weight="700" letter-spacing="1">DATA SOURCES</text>
+  <rect x="415" y="596" width="148" height="26" rx="5" fill="#c3fae8" stroke="#06b6d4" stroke-width="1"/>
+  <text x="489" y="614" text-anchor="middle" font-size="12" fill="#1e1e1e">Qdrant :6333</text>
+  <rect x="415" y="630" width="148" height="26" rx="5" fill="#c3fae8" stroke="#06b6d4" stroke-width="1"/>
+  <text x="489" y="648" text-anchor="middle" font-size="12" fill="#1e1e1e">PrimeKG (KG)</text>
+  <rect x="578" y="612" width="138" height="26" rx="5" fill="#c3fae8" stroke="#06b6d4" stroke-width="1"/>
+  <text x="647" y="630" text-anchor="middle" font-size="12" fill="#1e1e1e">PubMed 36M+</text>
+
+  <!-- ===== OBSERVABILITY SIDEBAR ===== -->
+  <rect x="780" y="42" width="260" height="470" rx="10" fill="#ffd8a8" fill-opacity="0.28" stroke="#f59e0b" stroke-width="1"/>
+  <text x="792" y="58" font-size="11" fill="#92400e" font-weight="700" letter-spacing="1">OBSERVABILITY</text>
+  <rect x="795" y="72" width="230" height="34" rx="6" fill="#ffd8a8" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="910" y="94" text-anchor="middle" font-size="14" font-weight="600" fill="#1e1e1e">Langfuse v3 :3001</text>
+  <rect x="795" y="120" width="230" height="28" rx="5" fill="#ffd8a8" stroke="#f59e0b" stroke-width="1"/>
+  <text x="910" y="139" text-anchor="middle" font-size="11" fill="#1e1e1e">MCP medical_search :9001</text>
+  <rect x="795" y="158" width="230" height="28" rx="5" fill="#ffd8a8" stroke="#f59e0b" stroke-width="1"/>
+  <text x="910" y="177" text-anchor="middle" font-size="11" fill="#1e1e1e">MCP citation_lookup :9002</text>
+  <text x="910" y="215" text-anchor="middle" font-size="12" fill="#92400e">Postgres   ClickHouse</text>
+  <text x="910" y="232" text-anchor="middle" font-size="12" fill="#92400e">MinIO   Redis</text>
+
+  <!-- Dashed arrow: main → observability -->
+  <line x1="730" y1="240" x2="780" y2="240" stroke="#f59e0b" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arr-o)"/>
+</svg>

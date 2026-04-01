@@ -15,8 +15,14 @@ export async function login(username, password) {
   return data
 }
 
-export async function queryRag(question, model, mode = 'rag') {
-  const { data } = await api.post('/query', { question, model, mode })
+export async function queryRag(question, model = 'gemini', mode = 'rag', searchMode = 'standard', role = 'doctor') {
+  const { data } = await api.post('/query', {
+    question,
+    model,
+    mode,
+    search_mode: searchMode,
+    role,
+  })
   return data
 }
 

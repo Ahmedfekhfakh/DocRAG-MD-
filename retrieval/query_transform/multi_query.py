@@ -1,6 +1,7 @@
 """Multi-query expansion — 3 LLM-generated rephrasings."""
-from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import PromptTemplate
+
 from generation.llm_router import get_llm
 
 _MQ_PROMPT = PromptTemplate.from_template(
@@ -9,11 +10,11 @@ _MQ_PROMPT = PromptTemplate.from_template(
 )
 
 
-async def expand_query(question: str, model_name: str = "gemini") -> list[str]:
+async def expand_query(question: str, model_name: str = "gemini", config=None) -> list[str]:
     llm = get_llm(model_name)
     chain = _MQ_PROMPT | llm | StrOutputParser()
-    result = await chain.ainvoke({"question": question})
+    invoke_config = dict(config) if config else {}
+    invoke_config["run_name"] = "deep_search_multi_query"
+    result = await chain.ainvoke({"question": question}, config=invoke_config)
     variants = [q.strip() for q in result.strip().split("\n") if q.strip()]
-    # Always include the original
-    all_queries = [question] + variants[:3]
-    return all_queries
+    return [question] + variants[:3]

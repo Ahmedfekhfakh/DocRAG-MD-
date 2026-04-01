@@ -1,7 +1,7 @@
 <div align="center">
   <img src="docs/logo.jpeg" alt="DocRAG-MD" width="280" style="border-radius:16px; margin-bottom:16px"/>
   <h1>DocRAG-MD — Multi-Agent Medical RAG Platform</h1>
-  <p><b>Production-grade clinical Q&A with multi-agent routing, GraphRAG, Self-RAG, and PubMed Deep Search over 301k StatPearls chunks</b></p>
+  <p><b>Production-grade clinical Q&A with multi-agent routing, GraphRAG, Self-RAG, and Deep Search over 301k StatPearls chunks</b></p>
   <p>
     <img src="https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white"/>
     <img src="https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi&logoColor=white"/>
@@ -20,16 +20,16 @@
 
 <div align="center">
 
-### Authentication
-<p float="left">
-  <img src="docs/screenshots/signup.png" alt="Sign Up" width="48%"/>
-  <img src="docs/screenshots/login.png" alt="Login" width="48%"/>
-</p>
-
 ### Chat Interface
 <p float="left">
   <img src="docs/screenshots/chat_patient_light.png" alt="Patient mode (light)" width="48%"/>
   <img src="docs/screenshots/chat_doctor_sombre.png" alt="Doctor mode (dark)" width="48%"/>
+</p>
+
+### Authentication
+<p float="left">
+  <img src="docs/screenshots/signup.png" alt="Sign Up" width="48%"/>
+  <img src="docs/screenshots/login.png" alt="Login" width="48%"/>
 </p>
 
 ### Langfuse Observability
@@ -47,46 +47,81 @@
 
 ## 📋 About
 
-DocRAG-MD is a multi-agent Retrieval-Augmented Generation platform for clinical question answering. An LLM-based orchestrator classifies user intent and routes queries to four specialized LangGraph agents — **diagnosis**, **pharmacology**, **general medical QA**, and **benchmark evaluation**. Users choose between three LLMs (Gemini 2.5 Flash, BioMistral 7B local, GPT-4o) and two search modes (RAG local over StatPearls, Deep Search over PubMed).
+An LLM orchestrator classifies user intent and routes queries to **4 specialized LangGraph agents** (diagnosis, pharmacology, general, evaluator). Users pick from **4 LLMs** (Gemini 2.5 Flash, Gemini 2.5 Pro, BioMistral 7B local, GPT-4o), **4 source modes** (clinical textbooks, knowledge graph, hybrid, PubMed), and a **Deep Search** mode with multi-step retrieval and real-time traces. A role selector (patient / doctor) adapts the response style.
 
-The platform introduces three key technical differentiators: **GraphRAG** enrichment via a Knowledge Graph built from StatPearls co-mentions (7 regex-classified relation types, NetworkX MultiGraph, pickle cache), **Self-RAG** post-generation verification that checks fidelity and completeness before returning answers (max 2 retries with query reformulation), and **CRAG** confidence gating with sigmoid-normalized reranker scores (threshold > 0.60).
+**Three technical differentiators:** **GraphRAG** via PrimeKG (100k+ nodes, 4M+ edges, 9 medical relations), **Self-RAG** post-generation fidelity/completeness checks (max 2 retries), and **CRAG** confidence gating (sigmoid > 0.60). The knowledge base is **301k StatPearls chunks** + **36M+ PubMed articles** (live API).
 
-DocRAG-MD achieves **62%+ accuracy on 150 MedMCQA validation questions** (vs ~52% baseline). The infrastructure runs as 11 Docker services with Langfuse v3 full observability (traces, spans, generations), 2 MCP servers for tool-augmented retrieval, and a React chat UI with model and mode selection.
+**Result:** 62%+ accuracy on 150 MedMCQA questions (vs ~52% baseline). Runs as 11 Docker services with Langfuse v3 observability and 2 MCP servers.
 
----
-
-## ✨ Key Features
+<details>
+<summary><b>Key features (click to expand)</b></summary>
 
 | Feature | Description |
 |---|---|
-| **Multi-Agent Orchestrator** | LLM-based intent classification → routes to 4 specialized LangGraph agents (diagnostic, pharmacology, general, evaluator) |
-| **GraphRAG** | Knowledge Graph built from StatPearls co-mentions — 7 relation types (treatment, causes, symptom, diagnosis, contraindication, complication, associated), NetworkX MultiGraph, pickle cache |
-| **Self-RAG** | Post-generation fidelity + completeness check via LLM — auto-reformulates on failure (max 2 retries) |
-| **Deep Search** | PubMed E-utilities API (36M+ peer-reviewed articles) — esearch → esummary → efetch abstracts |
-| **Hybrid Retrieval** | Dense (PubMedBERT 768-dim cosine) + Sparse (BM25 TF-IDF) with Reciprocal Rank Fusion (k=60) |
-| **CRAG Gate** | Sigmoid-normalized reranker scores — threshold > 0.60, prevents low-confidence generations |
-| **HyDE** | Hypothetical Document Embeddings — generates synthetic passages for expanded query matching |
-| **Lost-in-Middle** | Context reordering — best chunks at positions 0 and -1 to maximize LLM attention |
-| **MCP Servers** | `medical_search` (:9001) + `citation_lookup` (:9002) via fastmcp Streamable HTTP |
-| **Langfuse v3** | Full LLM observability — traces, spans, generations, with ClickHouse analytics and S3 storage |
+| **Multi-Agent Orchestrator** | LLM-based intent classification → routes to 4 specialized LangGraph agents |
+| **GraphRAG** | PrimeKG — 9 medical relations (`indication`, `contraindication`, `off-label use`, `drug_drug`, `drug_effect`, `disease_phenotype_positive/negative`, `disease_disease`, `disease_protein`) |
+| **Self-RAG** | Post-generation fidelity + completeness check — auto-reformulates on failure (max 2 retries) |
+| **Deep Search** | LangGraph multi-step retrieval — query decomposition, source drill-down, follow-up queries, real-time trace streaming |
+| **PubMed Search** | PubMed E-utilities API (36M+ articles) — esearch → esummary → efetch abstracts |
+| **Hybrid Retrieval** | Dense (PubMedBERT 768-dim) + Sparse (BM25) with Reciprocal Rank Fusion (k=60) |
+| **CRAG Gate** | Sigmoid-normalized reranker scores — threshold > 0.60 |
+| **HyDE** | Hypothetical Document Embeddings for expanded query matching |
+| **Lost-in-Middle** | Context reordering — best chunks at positions 0 and -1 |
+| **MCP Servers** | `medical_search` (:9001) + `citation_lookup` (:9002) via fastmcp |
+| **Langfuse v3** | Full LLM observability — traces, spans, generations, ClickHouse analytics |
+
+</details>
+
+<details>
+<summary><b>Tech stack</b></summary>
+
+| Component | Technology | Role |
+|---|---|---|
+| **Language** | Python 3.11 | Backend runtime |
+| **Package Manager** | [uv](https://github.com/astral-sh/uv) + `pyproject.toml` | Dependency management |
+| **LLMs** | Gemini 2.5 Flash · Gemini 2.5 Pro · BioMistral 7B (Q4_K_M) · GPT-4o | Cloud + local inference |
+| **LLM Framework** | LangChain LCEL + LangGraph | Chains and agent orchestration |
+| **Vector DB** | Qdrant | Dense (768-dim cosine) + sparse (BM25) named vectors |
+| **Embeddings** | PubMedBERT (`pritamdeka/PubMedBERT-mnli-snli-scinli-scitail-mednli-stsb`) | Biomedical dense embeddings |
+| **Reranker** | `cross-encoder/ms-marco-MiniLM-L-6-v2` | Cross-encoder rescoring |
+| **Knowledge Graph** | PrimeKG + NetworkX MultiGraph | 100k+ nodes, 4M+ edges, pickle cache |
+| **API** | FastAPI + WebSocket | REST and streaming endpoints |
+| **MCP** | fastmcp (Streamable HTTP) | Tool-augmented retrieval servers |
+| **Frontend** | React 18 + Vite + TailwindCSS | Chat UI with model/mode selectors |
+| **Observability** | Langfuse v3 | Traces, spans, cost tracking |
+| **Infra** | Docker Compose (11 services) | Full-stack orchestration |
+
+</details>
 
 ---
 
 ## 🏗️ Architecture
 
-<!-- <p align="center">
-  <img src="docs/screenshots/architecture.png" alt="Architecture" width="85%"/>
-</p> -->
+<p align="center">
+  <a href="https://raw.githubusercontent.com/tahianahajanirina/DocRAG-MD/tahiana/docs/diagrams/architecture.svg">
+    <img src="docs/diagrams/architecture.svg" alt="Architecture Overview" width="90%"/>
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://raw.githubusercontent.com/tahianahajanirina/DocRAG-MD/tahiana/docs/diagrams/rag_pipeline.svg">
+    <img src="docs/diagrams/rag_pipeline.svg" alt="RAG Pipeline" width="90%"/>
+  </a>
+</p>
+
+<details>
+<summary>ASCII text version</summary>
 
 ```
 ┌────────────────────── REACT FRONTEND  :3000 ───────────────────────┐
-│  Chat UI · ModelSelector (Gemini / BioMistral / GPT-4o)            │
-│           ModeSelector  (RAG local / Deep Search PubMed)           │
+│  Chat UI · ModelSelector (Gemini Flash / Pro / BioMistral / GPT-4o) │
+│           ModeSelector  (RAG / Graph / Hybrid / Deep Search)       │
+│           RoleSelector  (Patient / Doctor)                         │
 └────────────────────────────┬───────────────────────────────────────┘
                              │ WebSocket + REST
 ┌────────────────────────────▼───────────────────────────────────────┐
 │                    FASTAPI BACKEND  :8000                           │
-│   POST /query · POST /ingest · GET /health · WS /ws/chat           │
+│   /auth · /query · /ingest · /evaluate · /health · WS /ws/chat     │
 ├────────────────────────────────────────────────────────────────────┤
 │  ORCHESTRATOR (LangGraph StateGraph)                                │
 │    classify_intent → route_to_agent                                 │
@@ -95,203 +130,67 @@ DocRAG-MD achieves **62%+ accuracy on 150 MedMCQA validation questions** (vs ~52
 │    ├─ GENERAL         → General Agent                               │
 │    └─ BENCHMARK       → Evaluator Agent                             │
 ├────────────────────────────────────────────────────────────────────┤
-│  AGENT PIPELINE (per specialized agent)                             │
-│    query_transform (HyDE)                                           │
-│    → search: Qdrant hybrid (dense + sparse + RRF)                   │
-│            | Deep Search (PubMed E-utilities)                       │
-│    → graph_search: KG StatPearls (diagnosis/pharmacology only)      │
-│    → rerank (MiniLM-L-6-v2 cross-encoder)                          │
-│    → CRAG gate (sigmoid > 0.60)                                     │
-│    → context assembly (dedup + lost-in-middle + citations)          │
-│    → generate (selected LLM)                                        │
-│    → self_reflect (faithful? complete? → retry or output)           │
-├────────────────────────────────────────────────────────────────────┤
 │  LLM ROUTER                                                        │
-│    biomistral → llama.cpp (:8080)                                   │
-│    gemini     → Gemini 2.5 Flash (API)                              │
-│    gpt4o      → GPT-4o (API)                                       │
-├──────────────────────────────┬─────────────────────────────────────┤
-│  MCP SERVERS                 │  OBSERVABILITY                      │
-│  medical_search  :9001/mcp   │  Langfuse v3  :3001                 │
-│  citation_lookup :9002/mcp   │  Postgres · ClickHouse · MinIO     │
-└──────────────────────────────┴─────────────────────────────────────┘
+│    biomistral  → llama.cpp (:8080)                                  │
+│    gemini      → Gemini 2.5 Flash (Vertex AI)                       │
+│    gemini-pro  → Gemini 2.5 Pro (Vertex AI)                         │
+│    gpt4o       → GPT-4o (API)                                       │
+└────────────────────────────────────────────────────────────────────┘
 ```
 
-**Pipeline:** Query → HyDE → Hybrid RRF (PubMedBERT dense + BM25 sparse) + GraphRAG → MiniLM rerank → CRAG gate → lost-in-middle assembly → LLM generation → Self-RAG reflection → cited response
-
----
-
-## 🛠️ Tech Stack
-
-| Component | Technology | Role |
-|---|---|---|
-| **Language** | Python 3.11 | Backend runtime |
-| **Package Manager** | [uv](https://github.com/astral-sh/uv) + `pyproject.toml` | Dependency management |
-| **LLMs** | Gemini 2.5 Flash · BioMistral 7B (Q4_K_M) · GPT-4o | Cloud + local inference |
-| **LLM Framework** | LangChain LCEL + LangGraph | Chains and agent orchestration |
-| **Vector DB** | Qdrant | Dense (768-dim cosine) + sparse (BM25) named vectors |
-| **Embeddings** | PubMedBERT (`pritamdeka/PubMedBERT-mnli-snli-scinli-scitail-mednli-stsb`) | Biomedical dense embeddings |
-| **Reranker** | `cross-encoder/ms-marco-MiniLM-L-6-v2` | Cross-encoder rescoring |
-| **Knowledge Graph** | NetworkX MultiGraph | StatPearls co-mention graph with pickle cache |
-| **API** | FastAPI + WebSocket | REST and streaming endpoints |
-| **MCP** | fastmcp (Streamable HTTP) | Tool-augmented retrieval servers |
-| **Frontend** | React 18 + Vite + TailwindCSS | Chat UI with model/mode selectors |
-| **Observability** | Langfuse v3 | Traces, spans, cost tracking |
-| **Infra** | Docker Compose (11 services) | Full-stack orchestration |
-
----
-
-## 📊 Data Sources
-
-| Source | Volume | Usage |
-|---|---|---|
-| **StatPearls** | 301k chunks | Primary knowledge base — ingested into Qdrant + used to build KG |
-| **PubMed** | 36M+ articles | Deep Search mode — queried live via NCBI E-utilities API |
-| **MedMCQA** | 194k questions | Evaluation benchmark (150 sampled for POC) |
+</details>
 
 ---
 
 ## 🤖 Agents
 
-| Agent | Intent Trigger | Specialty | PrimeKG Relations |
+<p align="center">
+  <a href="https://raw.githubusercontent.com/tahianahajanirina/DocRAG-MD/tahiana/docs/diagrams/agent_routing.svg">
+    <img src="docs/diagrams/agent_routing.svg" alt="Agent Routing" width="85%"/>
+  </a>
+</p>
+
+| Agent | Intent | Specialty | PrimeKG Relations |
 |---|---|---|---|
-| **Diagnosis** | `DIAGNOSTIC` | Symptoms, differential diagnosis, clinical decision trees | `disease_phenotype_positive`, `disease_disease` |
-| **Pharmacology** | `PHARMACOLOGIE` | Drugs, interactions, contraindications, dosing | `contraindication`, `indication`, `drug_drug`, `off-label use` |
+| **Diagnosis** | `DIAGNOSTIC` | Symptoms, differential diagnosis | `disease_phenotype_positive`, `disease_disease` |
+| **Pharmacology** | `PHARMACOLOGIE` | Drugs, interactions, dosing | `contraindication`, `indication`, `drug_drug`, `off-label use` |
 | **General** | `GENERAL` | Standard medical QA | All medical relations |
 | **Evaluator** | `BENCHMARK` | MedMCQA accuracy reporting | N/A |
 
-Each specialized agent runs the full pipeline: **query_transform → search → graph_search → rerank → CRAG gate → assemble → generate → self_reflect** with conditional retry (max 2).
+Each agent runs: **HyDE → search → graph_search → rerank → CRAG → assemble → generate → self_reflect** (max 2 retries).
 
 ---
 
 ## 🚀 Getting Started
 
-**Prerequisites**
-- Docker + Docker Compose
-- GCP project with Vertex AI API enabled (recommended), or Gemini API key from [aistudio.google.com](https://aistudio.google.com)
-- OpenAI API key (optional, for GPT-4o)
-
-**Quick Start**
-
 ```bash
-# 1. Clone the repository
-git clone https://github.com/Ahmedfekhfakh/DocRAG-MD-.git
-cd DocRAG-MD-
+# 1. Clone and configure
+git clone https://github.com/Ahmedfekhfakh/DocRAG-MD-.git && cd DocRAG-MD-
+cp .env.example .env        # Edit: set GOOGLE_API_KEY=AIza...
 
-# 2. Configure environment
-cp .env.example .env
-# Edit .env: set GOOGLE_API_KEY=AIza...
+# 2. Download data (~6 GB)
+bash download_data.sh        # StatPearls + BioMistral GGUF
 
-# 3. Download StatPearls data + BioMistral model (~6 GB total)
-bash download_data.sh          # Full dataset (~300k chunks) + BioMistral 7B GGUF
-bash download_data.sh 5000     # Smoke test (5000 chunks) + BioMistral 7B GGUF
-
-# 4. Start all services (first run builds the images)
+# 3. Launch
 docker compose up --build
 ```
 
-On first run, Docker will start Qdrant, build the API, auto-ingest StatPearls into the vector DB, build the Knowledge Graph (cached as pickle), and serve the frontend. HuggingFace model weights are cached in a Docker volume.
+**Frontend:** `http://localhost:3000` — **API docs:** `http://localhost:8000/docs` — **Langfuse:** `http://localhost:3001`
 
-**Frontend:** `http://localhost:3000` — **API docs:** `http://localhost:8000/docs`
-
-**Manual Installation (no Docker for the app)**
+<details>
+<summary><b>Manual installation (without Docker for the app)</b></summary>
 
 ```bash
-# Install uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Setup environment
-uv venv --python 3.11
-source .venv/bin/activate
-uv pip install -e .
-
-# Start Qdrant separately
+uv venv --python 3.11 && source .venv/bin/activate && uv pip install -e .
 docker run -d -p 6333:6333 -v qdrant_storage:/qdrant/storage qdrant/qdrant
-
-# Configure and run
 export QDRANT_HOST=localhost GOOGLE_API_KEY=AIza...
 bash download_data.sh 5000
 python -m ingestion.pipeline
 uvicorn api.main:app --host 0.0.0.0 --port 8000
 ```
 
----
-
-## 🔌 API Reference
-
-**`GET /health`**
-
-```json
-{ "status": "ok", "qdrant": "ok", "version": "0.1.0" }
-```
-
-**`POST /query`**
-
-```json
-// Request
-{
-  "question": "What are the first-line treatments for hypertension?",
-  "model": "gemini",       // "gemini" | "biomistral" | "gpt4o"
-  "mode": "rag",            // "rag" | "deep_search"
-  "use_cot": false
-}
-
-// Response
-{
-  "answer": "First-line antihypertensives include ACE inhibitors [1], thiazide diuretics [2]...",
-  "sources": [
-    { "doc_id": "...", "title": "Hypertension", "content": "...", "source": "statpearls", "score": 8.3 }
-  ],
-  "model": "gemini",
-  "is_confident": true
-}
-```
-
-**`WS /ws/chat`**
-
-```json
-// Send
-{ "question": "What is Type 2 diabetes?", "model": "gemini", "mode": "rag" }
-
-// Receive
-{ "type": "start", "model": "gemini" }
-{ "type": "answer", "answer": "...", "sources": [...], "model": "gemini", "intent": "GENERAL" }
-```
-
-**`POST /ingest`**
-
-```json
-{ "limit": null }   // null = all chunks
-```
-
----
-
-## 🧰 MCP Servers
-
-| Server | Tool | Description |
-|---|---|---|
-| `medical_search` | `search(query, top_k)` | Hybrid dense+sparse search with cross-encoder reranking |
-| `medical_search` | `search_and_rerank(query, top_k)` | Search with full rerank pipeline |
-| `citation_lookup` | `lookup(doc_id)` | Fetch full article content by document ID |
-
-```python
-from langchain_mcp_adapters.client import MultiServerMCPClient
-
-client = MultiServerMCPClient({
-    "medical_search": {"url": "http://localhost:9001/mcp", "transport": "http"},
-    "citation_lookup": {"url": "http://localhost:9002/mcp", "transport": "http"},
-})
-```
-
----
-
-## 🧪 Tests
-
-```bash
-uv run pytest tests/ -v
-```
-
-**37 / 37 passing** — covers API endpoints, agent pipelines, hybrid retrieval, reranking, ingestion, and generation.
+</details>
 
 ---
 
@@ -301,133 +200,175 @@ uv run pytest tests/ -v
 |---|---|---|
 | **MedMCQA Accuracy** (150 questions) | ~52% | **62%+** |
 
-Self-RAG retry improves accuracy by ~2-3% through fidelity and completeness checks on generated answers.
+Self-RAG retry improves accuracy by ~2-3%. **40 tests** pass (`uv run pytest tests/ -v`).
 
 ---
 
-## ⚙️ Environment Variables
+## 📖 Reference
+
+<details>
+<summary><b>API Reference (6 endpoints)</b></summary>
+
+**`GET /health`** → `{ "status": "ok", "qdrant": "ok", "version": "0.1.0" }`
+
+**`POST /auth/signup`**
+```json
+{ "username": "john", "password": "secret", "role": "doctor" }
+→ { "id": 1, "username": "john", "role": "doctor" }
+```
+
+**`POST /auth/login`**
+```json
+{ "username": "john", "password": "secret" }
+→ { "id": 1, "username": "john", "role": "doctor" }
+```
+
+**`POST /query`**
+```json
+// Request
+{
+  "question": "First-line treatments for hypertension?",
+  "model": "gemini",        // "gemini" | "gemini-pro" | "biomistral" | "gpt4o"
+  "mode": "rag",             // "rag" | "graph" | "hybrid" | "deep_search"
+  "search_mode": "standard", // "standard" | "deep"
+  "use_cot": false,
+  "role": "doctor"
+}
+// Response
+{
+  "answer": "ACE inhibitors [1], thiazide diuretics [2]...",
+  "sources": [{ "doc_id": "...", "title": "Hypertension", "content": "...", "score": 8.3 }],
+  "model": "gemini", "mode": "rag", "search_mode": "standard", "intent": "GENERAL", "is_confident": true
+}
+```
+
+**`WS /ws/chat`**
+```json
+// Send
+{ "question": "What is diabetes?", "model": "gemini", "mode": "rag", "search_mode": "standard", "role": "doctor" }
+// Receive (standard)
+{ "type": "answer", "answer": "...", "sources": [...], "intent": "GENERAL" }
+// Receive (deep search — includes trace events)
+{ "type": "trace", "step": "retrieval", "status": "done", "evidence_count": 12 }
+{ "type": "delta", "text": "Diabetes is..." }
+{ "type": "answer", "answer": "...", "sources": [...], "search_mode": "deep" }
+```
+
+**`POST /evaluate/ragas`**
+```json
+{ "questions": ["What causes hypertension?"], "model": "gemini" }
+→ { "scores": { "faithfulness": 0.85, "answer_relevancy": 0.91 }, "n_samples": 1 }
+```
+
+</details>
+
+<details>
+<summary><b>MCP Servers</b></summary>
+
+| Server | Tool | Description |
+|---|---|---|
+| `medical_search` | `search(query, top_k)` | Hybrid search + reranking |
+| `medical_search` | `search_and_rerank(query, top_k)` | Full rerank pipeline |
+| `citation_lookup` | `lookup(doc_id)` | Fetch full article by ID |
+
+```python
+from langchain_mcp_adapters.client import MultiServerMCPClient
+client = MultiServerMCPClient({
+    "medical_search": {"url": "http://localhost:9001/mcp", "transport": "http"},
+    "citation_lookup": {"url": "http://localhost:9002/mcp", "transport": "http"},
+})
+```
+
+</details>
+
+<details>
+<summary><b>Environment variables</b></summary>
 
 | Variable | Default | Required | Description |
 |---|---|---|---|
-| `GOOGLE_API_KEY` | — | **Yes** | Gemini 2.5 Flash API key |
+| `GOOGLE_API_KEY` | — | **Yes** | Gemini API key (Flash + Pro) |
 | `OPENAI_API_KEY` | — | No | GPT-4o API key |
 | `BIOMISTRAL_URL` | `http://llama-cpp:8080/v1` | No | Local BioMistral endpoint |
-| `QDRANT_HOST` | `qdrant` | No | Qdrant hostname (`localhost` for local dev) |
+| `QDRANT_HOST` | `qdrant` | No | Qdrant hostname |
 | `QDRANT_PORT` | `6333` | No | Qdrant port |
 | `COLLECTION_NAME` | `medical_rag` | No | Qdrant collection name |
-| `DENSE_DIM` | `768` | No | Dense vector dimensionality |
 | `DENSE_MODEL` | `pritamdeka/PubMedBERT-...` | No | HuggingFace embedding model |
-| `CRAG_CONFIDENCE_THRESHOLD` | `0.60` | No | Sigmoid score cutoff for CRAG gate |
-| `LANGFUSE_PUBLIC_KEY` | — | No | Langfuse project public key |
-| `LANGFUSE_SECRET_KEY` | — | No | Langfuse project secret key |
-| `LANGFUSE_HOST` | `http://langfuse:3000` | No | Langfuse server URL |
+| `CRAG_CONFIDENCE_THRESHOLD` | `0.60` | No | CRAG gate cutoff |
+| `SELF_RAG_MAX_RETRIES` | `2` | No | Max reflection retries |
+| `AUTO_INGEST` | `0` | No | Auto-ingest on startup |
+| `LANGFUSE_PUBLIC_KEY` | — | No | Langfuse project key |
+| `LANGFUSE_SECRET_KEY` | — | No | Langfuse secret key |
+| `DATABASE_URL` | `postgresql://...medrag` | No | Auth database |
 
----
+</details>
 
-## 🐳 Docker Services
+<details>
+<summary><b>Docker services (11)</b></summary>
 
 | Service | Port | Role |
 |---|---|---|
-| `qdrant` | :6333 | Vector database (dense + sparse storage) |
-| `llama-cpp` | :8080 | BioMistral 7B Q4_K_M local inference |
-| `api` | :8000, :9001, :9002 | FastAPI backend + MCP servers |
-| `frontend` | :3000 | React chat UI via nginx |
-| `postgres` | :5432 | Langfuse metadata database |
-| `clickhouse` | — | Langfuse analytics engine |
-| `minio` | — | S3-compatible event storage |
-| `minio-init` | — | Bootstrap: creates `langfuse-events` bucket |
-| `redis` | — | Langfuse cache and background jobs |
-| `langfuse` | :3001 | LLM observability UI |
-| `langfuse-worker` | — | Background job processor |
+| `qdrant` | :6333 | Vector database |
+| `llama-cpp` | :8080 | BioMistral 7B local inference |
+| `api` | :8000, :9001, :9002 | FastAPI + MCP servers |
+| `frontend` | :3000 | React chat UI |
+| `postgres` | :5432 | Auth + Langfuse metadata |
+| `clickhouse` | — | Langfuse analytics |
+| `minio` | — | S3-compatible storage |
+| `redis` | — | Langfuse cache |
+| `langfuse` | :3001 | Observability UI |
+| `langfuse-worker` | — | Background jobs |
 
----
+</details>
 
-## 📁 Project Structure
+<details>
+<summary><b>Project structure</b></summary>
 
 ```
 DocRAG-MD/
 ├── agents/                          # LangGraph agents
 │   ├── orchestrator.py              # Intent classification + routing
-│   ├── diagnosis_agent.py           # Specialized diagnostic agent
-│   ├── pharmacology_agent.py        # Specialized pharmacology agent
-│   ├── general_agent.py             # Standard RAG + Self-RAG
-│   ├── eval_agent.py                # MedMCQA benchmark runner
-│   └── tools.py                     # @tool wrappers (graph, pubmed, search)
-├── retrieval/                       # Search & retrieval pipeline
-│   ├── hybrid_retriever.py          # Dense + sparse RRF fusion
-│   ├── reranker.py                  # Cross-encoder rescoring
+│   ├── diagnosis_agent.py           # Diagnostic agent
+│   ├── pharmacology_agent.py        # Pharmacology agent
+│   ├── general_agent.py             # General RAG + Self-RAG
+│   ├── deep_search_agent.py         # Multi-step Deep Search
+│   ├── eval_agent.py                # MedMCQA benchmark
+│   └── tools.py                     # @tool wrappers
+├── retrieval/                       # Search pipeline
+│   ├── hybrid_retriever.py          # Dense + sparse RRF
+│   ├── reranker.py                  # Cross-encoder
 │   ├── crag.py                      # Confidence gate
-│   ├── context_assembler.py         # Dedup + lost-in-middle + citations
-│   ├── knowledge_graph.py           # StatPearls KG builder + cache
-│   ├── deep_search.py               # PubMed E-utilities integration
-│   ├── self_reflect.py              # Fidelity + completeness checker
-│   └── query_transform/             # HyDE + multi-query expansion
+│   ├── context_assembler.py         # Dedup + citations
+│   ├── knowledge_graph.py           # PrimeKG loader
+│   ├── deep_search.py               # PubMed E-utilities
+│   ├── source_drilldown.py          # Deep Search drill-down
+│   ├── self_reflect.py              # Fidelity checker
+│   └── query_transform/             # HyDE + decompose
 ├── generation/                      # LLM chains
-│   ├── llm_router.py                # Factory: Gemini / BioMistral / GPT-4o
-│   ├── generator.py                 # LCEL prompt | llm | parser
-│   ├── observability.py             # Langfuse integration
-│   └── prompts/                     # clinical_qa.txt, cot_medical.txt
+│   ├── llm_router.py                # 4-LLM factory
+│   ├── generator.py                 # LCEL chains
+│   └── prompts/                     # Prompt templates
 ├── ingestion/                       # Data pipeline
-│   ├── pipeline.py                  # Batch embed + upsert to Qdrant
-│   ├── loaders/                     # StatPearls JSONL loader
-│   └── embedders/                   # Dense (PubMedBERT) + sparse (BM25)
-├── api/                             # FastAPI application
-│   ├── main.py                      # App + lifespan (Qdrant + KG loading)
-│   ├── schemas.py                   # Pydantic models
-│   └── routers/                     # query, ws, health, ingest
+├── api/                             # FastAPI app + routers
 ├── mcp_servers/                     # MCP tool servers
-│   ├── medical_search_server.py     # :9001 — search + rerank
-│   └── citation_lookup_server.py    # :9002 — doc lookup
 ├── evaluation/                      # Benchmarking
-│   ├── poc_benchmark.py             # MedMCQA runner
-│   └── datasets/medmcqa.py          # Dataset loader
-├── frontend/src/                    # React application
-│   ├── App.jsx                      # Main state + WebSocket
-│   └── components/                  # ChatWindow, ModelSelector, ModeSelector, SourcePanel
-├── tests/                           # 37 tests (pytest)
+├── frontend/src/                    # React app
+├── tests/                           # 40 tests
 ├── docker-compose.yml               # 11 services
-├── Dockerfile                       # Python 3.11 slim + uv
-└── pyproject.toml                   # Dependencies (uv)
+└── pyproject.toml                   # Dependencies
 ```
 
----
+</details>
 
-## ❓ Troubleshooting
+<details>
+<summary><b>Troubleshooting</b></summary>
 
-**Qdrant collection empty after startup**
-```bash
-docker compose exec api python -m ingestion.pipeline
-```
+- **Qdrant empty** → `docker compose exec api python -m ingestion.pipeline`
+- **HF model re-downloads** → `docker compose down && docker compose up` (hf_cache volume)
+- **BioMistral GGUF not found** → `bash download_data.sh`
+- **KG cache stale** → `rm -f data/kg_cache.pkl && docker compose restart api`
+- **Langfuse not connecting** → create project at `http://localhost:3001`, copy keys to `.env`
 
-**HuggingFace model re-downloads on every restart** — The `hf_cache` Docker volume persists weights. If it was just added, restart once:
-```bash
-docker compose down && docker compose up
-```
-
-**BioMistral GGUF not found** — Download the quantized model and place it in `models/`:
-```bash
-mkdir -p models/
-# Download BioMistral-7B.Q4_K_M.gguf into models/
-```
-
-**Knowledge Graph cache stale** — Delete the pickle cache and restart:
-```bash
-rm -f data/kg_cache.pkl
-docker compose restart api
-```
-
-**Langfuse not connecting** — Create a project at `http://localhost:3001`, then copy the public/secret keys into `.env`:
-```bash
-LANGFUSE_PUBLIC_KEY=pk_...
-LANGFUSE_SECRET_KEY=sk_...
-```
-
-**Permission denied on data files**
-```bash
-sudo chown -R $USER:$USER data/
-```
-
-**Docker not found in WSL** — Open Docker Desktop → Settings → Resources → WSL Integration → enable your distro.
+</details>
 
 ---
 
@@ -439,12 +380,9 @@ sudo chown -R $USER:$USER data/
 | 👨‍💻 | **Ahmed Fekhfakh** | [@Ahmedfekhfakh](https://github.com/Ahmedfekhfakh) |
 | 👨‍💻 | **Oussama Rhouma** | [@oussama10rhouma](https://github.com/oussama10rhouma) |
 | 👨‍💻 | **Mohamed Khalil Ounis** | [@AMATERASU11](https://github.com/AMATERASU11) |
-| 👨‍💻 | **Mohamed Amar** | |
-
----
+| 👨‍💻 | **Mohamed Amar** | [@mohamedbebay1-sys](https://github.com/mohamedbebay1-sys) |
 
 <p align="center">
-  <strong>DocRAG-MD</strong><br>
-  Multi-Agent Medical RAG Platform<br>
+  <strong>DocRAG-MD</strong> — Multi-Agent Medical RAG Platform<br>
   StatPearls · PubMed · LangGraph · Qdrant
 </p>

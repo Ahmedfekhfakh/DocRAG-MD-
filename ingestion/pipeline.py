@@ -23,6 +23,7 @@ COLLECTION = os.getenv("COLLECTION_NAME", "medical_rag")
 DENSE_DIM = int(os.getenv("DENSE_DIM", "768"))
 BATCH_SIZE = 64
 DATA_PATH = Path(os.getenv("DATA_PATH", "data/statpearls_chunks.jsonl"))
+SPARSE_STATE_PATH = Path(os.getenv("SPARSE_STATE_PATH", "data/sparse_embedder_state.json"))
 
 
 def get_client() -> QdrantClient:
@@ -58,6 +59,8 @@ def run(limit: int | None = None) -> int:
     log.info("Fitting BM25 sparse embedder ...")
     sparse_embedder = SparseEmbedder()
     sparse_embedder.fit([c.get("contents", c.get("content", "")) for c in chunks])
+    sparse_embedder.dump(SPARSE_STATE_PATH)
+    log.info("Saved sparse embedder state to %s", SPARSE_STATE_PATH)
 
     total = 0
     for i in range(0, len(chunks), BATCH_SIZE):

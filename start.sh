@@ -21,9 +21,13 @@ for i in $(seq 1 30); do
     sleep 2
 done
 
-# Auto-ingest if Qdrant collection is empty
-echo "Checking if ingestion is needed ..."
-if ! python - <<'PYEOF'
+AUTO_INGEST="${AUTO_INGEST:-0}"
+INGEST_LIMIT="${INGEST_LIMIT:-}"
+
+if [ "$AUTO_INGEST" = "1" ]; then
+    # Auto-ingest if Qdrant collection is empty
+    echo "Checking if ingestion is needed ..."
+    if ! python - <<'PYEOF'
 import os, sys
 from qdrant_client import QdrantClient
 
@@ -41,15 +45,22 @@ try:
 except Exception:
     sys.exit(1)
 PYEOF
-then
-    DATA_FILE="${DATA_PATH:-/app/data/statpearls_chunks.jsonl}"
-    if [ -f "$DATA_FILE" ]; then
-        echo "Running ingestion pipeline ..."
-        python -m ingestion.pipeline
-    else
-        echo "Warning: $DATA_FILE not found, skipping ingestion."
-        echo "Run 'bash download_data.sh' on the host to download StatPearls."
+    then
+        DATA_FILE="${DATA_PATH:-/app/data/statpearls_chunks.jsonl}"
+        if [ -f "$DATA_FILE" ]; then
+            echo "Running ingestion pipeline ..."
+            if [ -n "$INGEST_LIMIT" ]; then
+                python -m ingestion.pipeline "$INGEST_LIMIT"
+            else
+                python -m ingestion.pipeline
+            fi
+        else
+            echo "Warning: $DATA_FILE not found, skipping ingestion."
+            echo "Run 'bash download_data.sh' on the host to download StatPearls."
+        fi
     fi
+else
+    echo "AUTO_INGEST=0, skipping ingestion at startup."
 fi
 
 # Keep container alive with uvicorn as main process

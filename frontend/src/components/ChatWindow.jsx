@@ -1,13 +1,14 @@
 import { useEffect, useRef } from 'react'
+import DeepSearchTracePanel from './DeepSearchTracePanel'
 import MessageBubble from './MessageBubble'
 import SourcePanel from './SourcePanel'
 
-export default function ChatWindow({ messages, loading }) {
+export default function ChatWindow({ messages, loading, activeTrace, streamingAnswer }) {
   const bottomRef = useRef(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages, loading, streamingAnswer, activeTrace])
 
   return (
     <div className="flex-1 overflow-y-auto px-4 py-6 space-y-2">
@@ -19,6 +20,11 @@ export default function ChatWindow({ messages, loading }) {
       {messages.map((msg, i) => (
         <div key={i}>
           <MessageBubble message={msg} />
+          {msg.role === 'assistant' && msg.trace && (
+            <div className="ml-4 max-w-[85%]">
+              <DeepSearchTracePanel trace={msg.trace} compact />
+            </div>
+          )}
           {msg.role === 'assistant' && msg.sources && (
             <div className="ml-4">
               <SourcePanel sources={msg.sources} />
@@ -28,8 +34,11 @@ export default function ChatWindow({ messages, loading }) {
       ))}
       {loading && (
         <div className="flex justify-start mb-4">
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 text-sm text-gray-400 dark:text-gray-500 shadow-sm animate-pulse">
-            Retrieving and generating...
+          <div className="max-w-[85%] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 text-sm text-gray-500 dark:text-gray-400 shadow-sm">
+            <div className="animate-pulse">
+              {streamingAnswer || 'Retrieving and generating...'} 
+            </div>
+            <DeepSearchTracePanel trace={activeTrace} />
           </div>
         </div>
       )}

@@ -12,6 +12,17 @@ from langchain_core.runnables import RunnableConfig
 from generation.llm_router import get_llm
 from typing import TypedDict, Annotated
 import operator
+import logging
+
+log = logging.getLogger(__name__)
+
+
+def _safe_flush(handler):
+    """Non-blocking Langfuse flush."""
+    try:
+        handler.client.flush()
+    except Exception:
+        log.debug("Langfuse flush failed (non-blocking)", exc_info=True)
 
 CLASSIFY_PROMPT = ChatPromptTemplate.from_messages([
     ("system", """Classifie la question médicale suivante dans UNE des catégories :
@@ -29,6 +40,7 @@ class OrchestratorState(TypedDict):
     question: str
     model_name: str
     mode: str
+    search_mode: str
     intent: str
     answer: str
     sources: list[dict]
@@ -61,46 +73,44 @@ def route_to_agent(state: OrchestratorState) -> str:
     }.get(intent, "general_agent")
 
 
-async def run_diagnosis(state: OrchestratorState, config: RunnableConfig) -> dict:
-    """Agent diagnostic — spécialisé symptômes, diagnostic différentiel."""
-    from agents.diagnosis_agent import run_diagnosis_pipeline
-    result = await run_diagnosis_pipeline(
-        state["question"], state.get("model_name", "gemini"), state.get("mode", "rag"),
-        config=config,
-    )
+async def _run_deep_or_pipeline(state: OrchestratorState, pipeline_func, config: RunnableConfig) -> dict:
+    """Run deep search if search_mode=deep, otherwise run the specialized pipeline."""
+    if state.get("search_mode") == "deep":
+        from agents.rag_agent import run_rag
+        result = await run_rag(
+            state["question"],
+            model_name=state.get("model_name", "gemini"),
+            role="doctor",
+            search_mode="deep",
+        )
+    else:
+        result = await pipeline_func(
+            state["question"], state.get("model_name", "gemini"), state.get("mode", "rag"),
+            config=config,
+        )
     return {
         "answer": result["answer"],
         "sources": result.get("sources", []),
         "is_confident": result.get("is_confident", True),
     }
+
+
+async def run_diagnosis(state: OrchestratorState, config: RunnableConfig) -> dict:
+    """Agent diagnostic — spécialisé symptômes, diagnostic différentiel."""
+    from agents.diagnosis_agent import run_diagnosis_pipeline
+    return await _run_deep_or_pipeline(state, run_diagnosis_pipeline, config)
 
 
 async def run_pharmacology(state: OrchestratorState, config: RunnableConfig) -> dict:
     """Agent pharmacologie — spécialisé médicaments, interactions."""
     from agents.pharmacology_agent import run_pharmacology_pipeline
-    result = await run_pharmacology_pipeline(
-        state["question"], state.get("model_name", "gemini"), state.get("mode", "rag"),
-        config=config,
-    )
-    return {
-        "answer": result["answer"],
-        "sources": result.get("sources", []),
-        "is_confident": result.get("is_confident", True),
-    }
+    return await _run_deep_or_pipeline(state, run_pharmacology_pipeline, config)
 
 
 async def run_general(state: OrchestratorState, config: RunnableConfig) -> dict:
     """Agent général — RAG standard avec Self-RAG."""
     from agents.general_agent import run_general_pipeline
-    result = await run_general_pipeline(
-        state["question"], state.get("model_name", "gemini"), state.get("mode", "rag"),
-        config=config,
-    )
-    return {
-        "answer": result["answer"],
-        "sources": result.get("sources", []),
-        "is_confident": result.get("is_confident", True),
-    }
+    return await _run_deep_or_pipeline(state, run_general_pipeline, config)
 
 
 async def run_eval(state: OrchestratorState) -> dict:
@@ -145,7 +155,12 @@ def get_orchestrator_graph():
     return _orchestrator_graph
 
 
-async def run_orchestrator(question: str, model_name: str = "gemini", mode: str = "rag") -> dict:
+async def run_orchestrator(
+    question: str,
+    model_name: str = "gemini",
+    mode: str = "rag",
+    search_mode: str = "standard",
+) -> dict:
     """Point d'entrée principal — classifie et route vers l'agent spécialisé."""
     from langchain_core.messages import HumanMessage
     from generation.observability import create_langfuse_handler
@@ -162,6 +177,7 @@ async def run_orchestrator(question: str, model_name: str = "gemini", mode: str 
         "question": question,
         "model_name": model_name,
         "mode": mode,
+        "search_mode": search_mode,
         "intent": "",
         "answer": "",
         "sources": [],
@@ -169,15 +185,17 @@ async def run_orchestrator(question: str, model_name: str = "gemini", mode: str 
         "messages": [HumanMessage(content=question)],
     }, config=config)
 
+    # Fire-and-forget flush — don't block response delivery
     if handler:
-        try:
-            handler.client.flush()
-        except Exception:
-            pass
+        import asyncio
+        asyncio.get_event_loop().call_soon(
+            lambda: _safe_flush(handler)
+        )
 
     return {
         "answer": result["answer"],
         "sources": result.get("sources", []),
         "is_confident": result.get("is_confident", True),
         "intent": result.get("intent", "GENERAL"),
+        "search_mode": search_mode,
     }

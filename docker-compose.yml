@@ -57,6 +57,8 @@ services:
       - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY:-}
       - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY:-}
       - BIOMISTRAL_URL=http://llama-cpp:8080/v1
+      - AUTO_INGEST=${AUTO_INGEST:-0}
+      - INGEST_LIMIT=${INGEST_LIMIT:-}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s

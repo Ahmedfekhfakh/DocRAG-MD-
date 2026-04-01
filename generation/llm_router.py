@@ -13,14 +13,13 @@ def get_llm(model_name: str = "gemini"):
             temperature=0.0,
             max_tokens=1024,
         )
-    elif model_name == "gemini":
-        # Vertex AI si on est sur GCP (pas de clé API nécessaire)
-        # Sinon fallback sur Google AI Studio avec clé API
+    elif model_name in ("gemini", "gemini-pro"):
+        vertex_model = "gemini-2.5-pro" if model_name == "gemini-pro" else "gemini-2.5-flash"
         project = os.getenv("GOOGLE_CLOUD_PROJECT") or os.getenv("GCP_PROJECT")
         if project:
             from langchain_google_vertexai import ChatVertexAI
             return ChatVertexAI(
-                model_name="gemini-2.5-flash",
+                model_name=vertex_model,
                 project=project,
                 location=os.getenv("GCP_LOCATION", "europe-west1"),
                 temperature=0.0,
@@ -30,7 +29,7 @@ def get_llm(model_name: str = "gemini"):
             raise ValueError("Neither GOOGLE_CLOUD_PROJECT nor GOOGLE_API_KEY is set.")
         from langchain_google_genai import ChatGoogleGenerativeAI
         return ChatGoogleGenerativeAI(
-            model="gemini-2.5-flash",
+            model=vertex_model,
             temperature=0.0,
             google_api_key=api_key,
         )
@@ -40,4 +39,4 @@ def get_llm(model_name: str = "gemini"):
             temperature=0.0,
             api_key=os.getenv("OPENAI_API_KEY"),
         )
-    raise ValueError(f"Modèle inconnu : {model_name}")
+    raise ValueError(f"Unknown model: {model_name}")
